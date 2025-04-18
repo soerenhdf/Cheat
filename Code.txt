@@ -199,3 +199,12 @@ frame.InputEnded:Connect(function(input)
 		dragging = false
 	end
 end)
+
+-- Wenn das Menü minimiert ist, können die Bewegungen des Spielers nicht gestört werden
+RunService.Heartbeat:Connect(function()
+	if not flying then
+		local moveDirection = Vector3.new(control.R - control.L, 0, control.F - control.B)
+		local speed = 16 -- Standard-Laufgeschwindigkeit
+		character:Move(moveDirection * speed)
+	end
+end)
