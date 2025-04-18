@@ -23,20 +23,53 @@ title.Font = Enum.Font.SourceSansBold
 title.TextSize = 22
 title.BackgroundTransparency = 1
 
-local function createButton(name, yPos)
-	local btn = Instance.new("TextButton", frame)
-	btn.Size = UDim2.new(1, -20, 0, 30)
-	btn.Position = UDim2.new(0, 10, 0, yPos)
-	btn.Text = name
-	btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = Enum.Font.SourceSans
-	btn.TextSize = 18
-	btn.BorderSizePixel = 0
-	return btn
-end
+-- Key Validation
+local keyRequested = true
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.new(0, 260, 0, 150)
+keyFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
+keyFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+keyFrame.Visible = true
 
--- Fly Feature
+local keyTitle = Instance.new("TextLabel", keyFrame)
+keyTitle.Size = UDim2.new(1, 0, 0, 40)
+keyTitle.Text = "Enter the key to proceed"
+keyTitle.TextColor3 = Color3.new(1, 1, 1)
+keyTitle.Font = Enum.Font.SourceSansBold
+keyTitle.TextSize = 22
+keyTitle.BackgroundTransparency = 1
+
+local keyInput = Instance.new("TextBox", keyFrame)
+keyInput.Size = UDim2.new(0, 220, 0, 30)
+keyInput.Position = UDim2.new(0.5, -110, 0.5, -15)
+keyInput.TextColor3 = Color3.new(1, 1, 1)
+keyInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+keyInput.Font = Enum.Font.SourceSans
+keyInput.TextSize = 18
+keyInput.PlaceholderText = "Enter #crash-key"
+
+local submitBtn = Instance.new("TextButton", keyFrame)
+submitBtn.Size = UDim2.new(0, 100, 0, 30)
+submitBtn.Position = UDim2.new(0.5, -50, 0.8, -15)
+submitBtn.Text = "Submit"
+submitBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+submitBtn.TextColor3 = Color3.new(1, 1, 1)
+submitBtn.Font = Enum.Font.SourceSans
+submitBtn.TextSize = 18
+submitBtn.BorderSizePixel = 0
+
+submitBtn.MouseButton1Click:Connect(function()
+    if keyInput.Text == "#crash-key" then
+        keyRequested = false
+        keyFrame.Visible = false
+        print("Access granted!")
+    else
+        keyInput.Text = ""
+        keyInput.PlaceholderText = "Invalid key, try again!"
+    end
+end)
+
+-- GUI Buttons (fly, TP aura, wallhack)
 local flyEnabled = false
 local flyConn
 local function startFly()
@@ -192,3 +225,4 @@ closeBtn.MouseButton1Click:Connect(function()
 	stopWallhack()
 	gui:Destroy()
 end)
+
