@@ -40,14 +40,16 @@ end
 local flyEnabled = false
 local flyConn
 local function startFly()
+	if flyEnabled then return end
 	local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 	if not root then return end
 	local bv = Instance.new("BodyVelocity", root)
 	bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
 	bv.Velocity = Vector3.zero
+	bv.Name = "FlyVelocity"
 	flyConn = RunService.RenderStepped:Connect(function()
 		local move = Vector3.zero
-		if LocalPlayer.Character:FindFirstChild("Humanoid") then
+		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
 			move = Camera.CFrame.LookVector * (LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 and 100 or 0)
 		end
 		bv.Velocity = move
@@ -59,9 +61,8 @@ local function stopFly()
 	if flyConn then flyConn:Disconnect() flyConn = nil end
 	local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 	if root then
-		for _, c in pairs(root:GetChildren()) do
-			if c:IsA("BodyVelocity") then c:Destroy() end
-		end
+		local fly = root:FindFirstChild("FlyVelocity")
+		if fly then fly:Destroy() end
 	end
 	flyEnabled = false
 end
@@ -70,6 +71,7 @@ end
 local auraEnabled = false
 local auraConn
 local function startAura()
+	if auraEnabled then return end
 	auraEnabled = true
 	auraConn = RunService.RenderStepped:Connect(function()
 		local myChar = LocalPlayer.Character
@@ -89,7 +91,7 @@ local function startAura()
 
 		if closest then
 			local pos = closest.Character.HumanoidRootPart.Position
-			local offset = Vector3.new(math.random(-8,8), math.random(4,7), math.random(-8,8))
+			local offset = Vector3.new(math.random(-12,12), math.random(6,10), math.random(-12,12))
 			root.CFrame = CFrame.new(pos + offset, pos)
 		end
 	end)
@@ -104,6 +106,7 @@ end
 local wallhackEnabled = false
 local highlights = {}
 local function startWallhack()
+	if wallhackEnabled then return end
 	wallhackEnabled = true
 	for _, plr in ipairs(Players:GetPlayers()) do
 		if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
