@@ -5,12 +5,12 @@ local playerGui = player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
--- Fly Control Variablen
+-- Fly Variablen
 local flying = false
 local flyVelocity = nil
 local flyGyro = nil
 
--- ScreenGui
+-- GUI Setup
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "LeeresMenue"
 screenGui.ResetOnSpawn = false
@@ -22,17 +22,37 @@ frame.Size = UDim2.new(0, 300, 0, 200)
 frame.Position = UDim2.new(0.5, -150, 0.5, -100)
 frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 frame.BorderSizePixel = 0
+frame.Active = true -- notwendig für Drag
+frame.Draggable = true -- ermöglicht Verschieben
 frame.Parent = screenGui
 
--- Titel
+-- Titelleiste
 local title = Instance.new("TextLabel")
 title.Text = "Leeres Menü"
-title.Size = UDim2.new(1, 0, 0, 40)
+title.Size = UDim2.new(1, -40, 0, 40)
+title.Position = UDim2.new(0, 0, 0, 0)
 title.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 24
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Padding = UDim.new(0, 10)
 title.Parent = frame
+
+-- Schließen-Button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Text = "X"
+closeBtn.Size = UDim2.new(0, 40, 0, 40)
+closeBtn.Position = UDim2.new(1, -40, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 20
+closeBtn.Parent = frame
+
+closeBtn.MouseButton1Click:Connect(function()
+	frame.Visible = false
+end)
 
 -- Fly Button
 local flyButton = Instance.new("TextButton")
@@ -45,7 +65,7 @@ flyButton.Font = Enum.Font.SourceSans
 flyButton.TextSize = 20
 flyButton.Parent = frame
 
--- Fly Function
+-- Fly Logic
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
@@ -82,7 +102,7 @@ local function stopFlying()
 	if flyGyro then flyGyro:Destroy() end
 end
 
--- Tasteneingaben
+-- Tastatursteuerung
 UIS.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
 	if input.KeyCode == Enum.KeyCode.W then control.F = 1 end
@@ -98,7 +118,7 @@ UIS.InputEnded:Connect(function(input, gameProcessed)
 	if input.KeyCode == Enum.KeyCode.D then control.R = 0 end
 end)
 
--- Button Toggle
+-- Fly Button
 flyButton.MouseButton1Click:Connect(function()
 	if flying then
 		stopFlying()
