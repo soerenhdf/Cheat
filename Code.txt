@@ -14,6 +14,7 @@ frame.Position = UDim2.new(0.05, 0, 0.2, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.Active = true
 frame.Draggable = true
+frame.Visible = false
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 40)
@@ -62,6 +63,7 @@ submitBtn.MouseButton1Click:Connect(function()
     if keyInput.Text == "#crash-key" then
         keyRequested = false
         keyFrame.Visible = false
+        frame.Visible = true
         print("Access granted!")
     else
         keyInput.Text = ""
@@ -73,109 +75,130 @@ end)
 local flyEnabled = false
 local flyConn
 local function startFly()
-	if flyEnabled then return end
-	local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-	if not root then return end
-	local bv = Instance.new("BodyVelocity", root)
-	bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-	bv.Velocity = Vector3.zero
-	bv.Name = "FlyVelocity"
-	flyConn = RunService.RenderStepped:Connect(function()
-		local move = Vector3.zero
-		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-			move = Camera.CFrame.LookVector * (LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 and 100 or 0)
-		end
-		bv.Velocity = move
-	end)
-	flyEnabled = true
+    if flyEnabled then return end
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local bv = Instance.new("BodyVelocity", root)
+    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bv.Velocity = Vector3.zero
+    bv.Name = "FlyVelocity"
+    flyConn = RunService.RenderStepped:Connect(function()
+        local move = Vector3.zero
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            move = Camera.CFrame.LookVector * (LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 and 100 or 0)
+        end
+        bv.Velocity = move
+    end)
+    flyEnabled = true
 end
 
 local function stopFly()
-	if flyConn then flyConn:Disconnect() flyConn = nil end
-	local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-	if root then
-		local fly = root:FindFirstChild("FlyVelocity")
-		if fly then fly:Destroy() end
-	end
-	flyEnabled = false
+    if flyConn then flyConn:Disconnect() flyConn = nil end
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if root then
+        local fly = root:FindFirstChild("FlyVelocity")
+        if fly then fly:Destroy() end
+    end
+    flyEnabled = false
 end
 
 -- TP Aura
 local auraEnabled = false
 local auraConn
 local function startAura()
-	if auraEnabled then return end
-	auraEnabled = true
-	auraConn = RunService.RenderStepped:Connect(function()
-		local myChar = LocalPlayer.Character
-		if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
-		local root = myChar.HumanoidRootPart
+    if auraEnabled then return end
+    auraEnabled = true
+    auraConn = RunService.RenderStepped:Connect(function()
+        local myChar = LocalPlayer.Character
+        if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
+        local root = myChar.HumanoidRootPart
 
-		local closest, dist = nil, math.huge
-		for _, plr in ipairs(Players:GetPlayers()) do
-			if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-				local d = (root.Position - plr.Character.HumanoidRootPart.Position).Magnitude
-				if d < dist then
-					closest = plr
-					dist = d
-				end
-			end
-		end
+        local closest, dist = nil, math.huge
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                local d = (root.Position - plr.Character.HumanoidRootPart.Position).Magnitude
+                if d < dist then
+                    closest = plr
+                    dist = d
+                end
+            end
+        end
 
-		if closest then
-			local pos = closest.Character.HumanoidRootPart.Position
-			local offset = Vector3.new(math.random(-12,12), math.random(6,10), math.random(-12,12))
-			root.CFrame = CFrame.new(pos + offset, pos)
-		end
-	end)
+        if closest then
+            local pos = closest.Character.HumanoidRootPart.Position
+            local offset = Vector3.new(math.random(-12,12), math.random(6,10), math.random(-12,12))
+            root.CFrame = CFrame.new(pos + offset, pos)
+        end
+    end)
 end
 
 local function stopAura()
-	if auraConn then auraConn:Disconnect() auraConn = nil end
-	auraEnabled = false
+    if auraConn then auraConn:Disconnect() auraConn = nil end
+    auraEnabled = false
 end
 
 -- Wallhack
 local wallhackEnabled = false
 local highlights = {}
 local function startWallhack()
-	if wallhackEnabled then return end
-	wallhackEnabled = true
-	for _, plr in ipairs(Players:GetPlayers()) do
-		if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-			local box = Instance.new("BoxHandleAdornment")
-			box.Adornee = plr.Character.HumanoidRootPart
-			box.AlwaysOnTop = true
-			box.ZIndex = 5
-			box.Size = Vector3.new(4,5,2)
-			box.Color3 = Color3.fromRGB(255,0,0)
-			box.Transparency = 0.3
-			box.Parent = gui
-			table.insert(highlights, box)
-		end
-	end
+    if wallhackEnabled then return end
+    wallhackEnabled = true
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local box = Instance.new("BoxHandleAdornment")
+            box.Adornee = plr.Character.HumanoidRootPart
+            box.AlwaysOnTop = true
+            box.ZIndex = 5
+            box.Size = Vector3.new(4,5,2)
+            box.Color3 = Color3.fromRGB(255,0,0)
+            box.Transparency = 0.3
+            box.Parent = gui
+            table.insert(highlights, box)
+        end
+    end
 end
 
 local function stopWallhack()
-	for _, box in ipairs(highlights) do box:Destroy() end
-	highlights = {}
-	wallhackEnabled = false
+    for _, box in ipairs(highlights) do box:Destroy() end
+    highlights = {}
+    wallhackEnabled = false
 end
 
 -- Buttons
-local flyBtn = createButton("Toggle Fly", 50)
+local flyBtn = Instance.new("TextButton", frame)
+flyBtn.Size = UDim2.new(0, 100, 0, 40)
+flyBtn.Position = UDim2.new(0, 10, 0, 50)
+flyBtn.Text = "Toggle Fly"
+flyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+flyBtn.TextColor3 = Color3.new(1, 1, 1)
+flyBtn.Font = Enum.Font.SourceSansBold
+flyBtn.TextSize = 18
 flyBtn.MouseButton1Click:Connect(function()
-	if flyEnabled then stopFly() else startFly() end
+    if flyEnabled then stopFly() else startFly() end
 end)
 
-local auraBtn = createButton("Toggle TP Aura", 90)
+local auraBtn = Instance.new("TextButton", frame)
+auraBtn.Size = UDim2.new(0, 100, 0, 40)
+auraBtn.Position = UDim2.new(0, 10, 0, 100)
+auraBtn.Text = "Toggle TP Aura"
+auraBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+auraBtn.TextColor3 = Color3.new(1, 1, 1)
+auraBtn.Font = Enum.Font.SourceSansBold
+auraBtn.TextSize = 18
 auraBtn.MouseButton1Click:Connect(function()
-	if auraEnabled then stopAura() else startAura() end
+    if auraEnabled then stopAura() else startAura() end
 end)
 
-local wallBtn = createButton("Toggle Wallhack", 130)
+local wallBtn = Instance.new("TextButton", frame)
+wallBtn.Size = UDim2.new(0, 100, 0, 40)
+wallBtn.Position = UDim2.new(0, 10, 0, 150)
+wallBtn.Text = "Toggle Wallhack"
+wallBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+wallBtn.TextColor3 = Color3.new(1, 1, 1)
+wallBtn.Font = Enum.Font.SourceSansBold
+wallBtn.TextSize = 18
 wallBtn.MouseButton1Click:Connect(function()
-	if wallhackEnabled then stopWallhack() else startWallhack() end
+    if wallhackEnabled then stopWallhack() else startWallhack() end
 end)
 
 -- Minimieren / Schließen
@@ -201,28 +224,27 @@ closeBtn.TextSize = 18
 local miniButton
 
 minimizeBtn.MouseButton1Click:Connect(function()
-	frame.Visible = false
-	miniButton = Instance.new("TextButton", gui)
-	miniButton.Size = UDim2.new(0, 120, 0, 30)
-	miniButton.Position = UDim2.new(0.1, 0, 0.9, 0)
-	miniButton.Text = "Open Menu"
-	miniButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	miniButton.TextColor3 = Color3.new(1,1,1)
-	miniButton.Font = Enum.Font.SourceSansBold
-	miniButton.TextSize = 18
-	miniButton.Draggable = true
-	miniButton.Active = true
+    frame.Visible = false
+    miniButton = Instance.new("TextButton", gui)
+    miniButton.Size = UDim2.new(0, 120, 0, 30)
+    miniButton.Position = UDim2.new(0.1, 0, 0.9, 0)
+    miniButton.Text = "Open Menu"
+    miniButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    miniButton.TextColor3 = Color3.new(1,1,1)
+    miniButton.Font = Enum.Font.SourceSansBold
+    miniButton.TextSize = 18
+    miniButton.Draggable = true
+    miniButton.Active = true
 
-	miniButton.MouseButton1Click:Connect(function()
-		frame.Visible = true
-		miniButton:Destroy()
-	end)
+    miniButton.MouseButton1Click:Connect(function()
+        frame.Visible = true
+        miniButton:Destroy()
+    end)
 end)
 
 closeBtn.MouseButton1Click:Connect(function()
-	stopFly()
-	stopAura()
-	stopWallhack()
-	gui:Destroy()
+    stopFly()
+    stopAura()
+    stopWallhack()
+    gui:Destroy()
 end)
-
