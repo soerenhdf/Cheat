@@ -1,212 +1,176 @@
--- LocalScript in StarterGui
-
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
-
--- Services
+local root = character:WaitForChild("HumanoidRootPart")
+local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 
--- Teleportation und Fly Variablen
-local teleporting = false
-local flying = false
-local teleportDistance = 50 -- Maximaler Abstand, um den nächsten Spieler zu finden
-local moveSpeed = 100 -- Geschwindigkeit für Bewegung zum Ziel
-local flySpeed = 50 -- Geschwindigkeit beim Fliegen
+-- GUI Setup
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "ModMenu"
+gui.ResetOnSpawn = false
 
--- Funktion, um den nächsten Spieler zu finden
-local function getClosestPlayer()
-    local closestPlayer = nil
-    local shortestDistance = teleportDistance
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 300)
+frame.Position = UDim2.new(0.3, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
 
-    for _, otherPlayer in pairs(Players:GetPlayers()) do
-        if otherPlayer ~= player and otherPlayer.Character then
-            local otherPlayerRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if otherPlayerRoot then
-                local distance = (humanoidRootPart.Position - otherPlayerRoot.Position).Magnitude
-                if distance < shortestDistance then
-                    closestPlayer = otherPlayer
-                    shortestDistance = distance
-                end
-            end
-        end
-    end
-
-    return closestPlayer
-end
-
--- Funktion zum Teleportieren oder Fliegen zum nächsten Spieler
-local function teleportToPlayer(targetPlayer)
-    if targetPlayer then
-        local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if targetRoot then
-            -- Teleportiere dich direkt zum Zielspieler
-            humanoidRootPart.CFrame = targetRoot.CFrame + Vector3.new(0, 3, 0) -- Ein bisschen oberhalb des Ziels
-
-            -- Fliege dann zufällig in der Nähe des Zielspielers
-            while teleporting do
-                local randomOffset = Vector3.new(
-                    math.random(-5, 5),  -- Zufälliger Abstand in X
-                    0,                  -- Keine Höhenänderung
-                    math.random(-5, 5)   -- Zufälliger Abstand in Z
-                )
-
-                -- Zielposition berechnen
-                local targetPosition = targetRoot.Position + randomOffset
-
-                -- Bewege dich mit der Geschwindigkeit zum Ziel
-                humanoidRootPart.CFrame = CFrame.new(targetPosition)
-
-                -- Blickrichtung auf den Spieler ausrichten
-                humanoidRootPart.CFrame = CFrame.lookAt(humanoidRootPart.Position, targetRoot.Position)
-
-                wait(2)  -- Warte 2 Sekunden, bevor du dich wieder bewegst
-            end
-        end
-    end
-end
-
--- Funktion für das Fliegen
-local function startFly()
-    flying = true
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000) -- Setzt maximale Kraft für den Flug
-    bodyVelocity.Velocity = Vector3.new(0, flySpeed, 0) -- Geschwindigkeit in Y-Richtung
-    bodyVelocity.Parent = humanoidRootPart
-
-    -- Stoppe den Flug nach 10 Sekunden (kann beliebig angepasst werden)
-    wait(10)
-    bodyVelocity:Destroy()
-    flying = false
-end
-
--- Funktion zum Stoppen des Fliegens
-local function stopFly()
-    flying = false
-    humanoid.PlatformStand = false
-end
-
--- Funktion für das Starten und Stoppen der Teleport-Aura
-local function startTeleportAura()
-    teleporting = true
-    local closestPlayer = getClosestPlayer()
-    if closestPlayer then
-        teleportToPlayer(closestPlayer)
-    end
-end
-
--- Funktion, um die Teleport-Aura zu stoppen
-local function stopTeleportAura()
-    teleporting = false
-end
-
--- Menü mit Fly- und Teleport-Aura-Buttons
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player.PlayerGui
-
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 400, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.BorderSizePixel = 2
-mainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-mainFrame.Parent = screenGui
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 50)
-title.Position = UDim2.new(0, 0, 0, 0)
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
 title.Text = "By Crash Stars"
-title.TextSize = 24
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-title.Parent = mainFrame
+title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 22
+title.Font = Enum.Font.SourceSansBold
 
--- Fly Button
-local flyButton = Instance.new("TextButton")
-flyButton.Size = UDim2.new(0, 150, 0, 50)
-flyButton.Position = UDim2.new(0.5, -75, 0.2, 0)
-flyButton.Text = "Start Fly"
-flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+local flyButton = Instance.new("TextButton", frame)
+flyButton.Position = UDim2.new(0.5, -75, 0.3, 0)
+flyButton.Size = UDim2.new(0, 150, 0, 40)
+flyButton.Text = "Fly"
 flyButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+flyButton.TextColor3 = Color3.new(1, 1, 1)
 flyButton.Font = Enum.Font.SourceSans
-flyButton.TextSize = 24
-flyButton.Parent = mainFrame
+flyButton.TextSize = 20
 
--- Teleport Aura Button
-local teleportButton = Instance.new("TextButton")
-teleportButton.Size = UDim2.new(0, 150, 0, 50)
-teleportButton.Position = UDim2.new(0.5, -75, 0.4, 0)
-teleportButton.Text = "Teleport Aura"
-teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-teleportButton.Font = Enum.Font.SourceSans
-teleportButton.TextSize = 24
-teleportButton.Parent = mainFrame
+local auraButton = Instance.new("TextButton", frame)
+auraButton.Position = UDim2.new(0.5, -75, 0.5, 0)
+auraButton.Size = UDim2.new(0, 150, 0, 40)
+auraButton.Text = "TP Aura"
+auraButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+auraButton.TextColor3 = Color3.new(1, 1, 1)
+auraButton.Font = Enum.Font.SourceSans
+auraButton.TextSize = 20
 
--- Minimieren Button
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 100, 0, 50)
+local minimizeButton = Instance.new("TextButton", frame)
 minimizeButton.Position = UDim2.new(0.5, -50, 0.8, 0)
+minimizeButton.Size = UDim2.new(0, 100, 0, 35)
 minimizeButton.Text = "Minimize"
-minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+minimizeButton.TextColor3 = Color3.new(1, 1, 1)
 minimizeButton.Font = Enum.Font.SourceSans
-minimizeButton.TextSize = 24
-minimizeButton.Parent = mainFrame
+minimizeButton.TextSize = 18
 
+-- Variables
+local flying = false
+local flyVelocity
+local teleporting = false
+local auraConnection
 local minimized = false
 
--- Minimieren und Maximieren der Menügröße
-minimizeButton.MouseButton1Click:Connect(function()
-    if minimized then
-        mainFrame.Size = UDim2.new(0, 400, 0, 400)
-        title.Visible = true
-        flyButton.Visible = true
-        teleportButton.Visible = true
-        minimizeButton.Text = "Minimize"
-        minimized = false
-    else
-        mainFrame.Size = UDim2.new(0, 100, 0, 50)
-        title.Visible = false
-        flyButton.Visible = false
-        teleportButton.Visible = false
-        minimizeButton.Text = "Maximize"
-        minimized = true
-    end
-end)
+-- Functions
+local function stopFly()
+	flying = false
+	if flyVelocity then
+		flyVelocity:Destroy()
+		flyVelocity = nil
+	end
+end
 
--- Fly Button Funktionalität
+local function startFly()
+	if not flyVelocity then
+		flyVelocity = Instance.new("BodyVelocity")
+		flyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+		flyVelocity.Parent = root
+	end
+	flying = true
+	RunService.RenderStepped:Connect(function()
+		if flying then
+			local move = humanoid.MoveDirection
+			flyVelocity.Velocity = move * 100
+		end
+	end)
+end
+
+local function getClosestPlayer()
+	local closest
+	local shortest = math.huge
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+			local dist = (p.Character.HumanoidRootPart.Position - root.Position).Magnitude
+			if dist < shortest then
+				shortest = dist
+				closest = p
+			end
+		end
+	end
+	return closest
+end
+
+local function stopAura()
+	teleporting = false
+	if auraConnection then
+		auraConnection:Disconnect()
+		auraConnection = nil
+	end
+end
+
+local function startAura()
+	teleporting = true
+	auraConnection = RunService.Heartbeat:Connect(function()
+		local target = getClosestPlayer()
+		if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+			local pos = target.Character.HumanoidRootPart.Position
+			local offset = Vector3.new(math.random(-15, 15), math.random(5, 8), math.random(-15, 15))
+			local newPos = pos + offset
+			local direction = (pos - root.Position).Unit
+			root.CFrame = CFrame.lookAt(newPos, pos)
+			root.Velocity = direction * 200
+		end
+	end)
+end
+
+-- Button Events
 flyButton.MouseButton1Click:Connect(function()
-    if flying then
-        stopFly()
-        flyButton.Text = "Start Fly"
-    else
-        startFly()
-        flyButton.Text = "Stop Fly"
-    end
+	if flying then
+		stopFly()
+		flyButton.Text = "Fly"
+	else
+		stopAura() -- Nur ein Mod gleichzeitig
+		startFly()
+		flyButton.Text = "Stop Fly"
+		auraButton.Text = "TP Aura"
+	end
 end)
 
--- Teleport-Aura Button Funktionalität
-teleportButton.MouseButton1Click:Connect(function()
-    if teleporting then
-        stopTeleportAura()
-        teleportButton.Text = "Teleport Aura"
-    else
-        startTeleportAura()
-        teleportButton.Text = "Stop Aura"
-    end
+auraButton.MouseButton1Click:Connect(function()
+	if teleporting then
+		stopAura()
+		auraButton.Text = "TP Aura"
+	else
+		stopFly() -- Nur ein Mod gleichzeitig
+		startAura()
+		auraButton.Text = "Stop Aura"
+		flyButton.Text = "Fly"
+	end
 end)
 
--- Optional: Teleport-Aura beim Drücken der "P"-Taste starten/stoppen
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.P then
-        if teleporting then
-            stopTeleportAura()
-        else
-            startTeleportAura()
-        end
-    end
+minimizeButton.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	if minimized then
+		for _, child in pairs(frame:GetChildren()) do
+			if child ~= minimizeButton then
+				child.Visible = false
+			end
+		end
+		frame.Size = UDim2.new(0, 100, 0, 30)
+		minimizeButton.Size = UDim2.new(1, 0, 1, 0)
+		minimizeButton.Text = "+"
+		stopFly()
+		stopAura()
+		flyButton.Text = "Fly"
+		auraButton.Text = "TP Aura"
+	else
+		for _, child in pairs(frame:GetChildren()) do
+			child.Visible = true
+		end
+		frame.Size = UDim2.new(0, 300, 0, 300)
+		minimizeButton.Position = UDim2.new(0.5, -50, 0.8, 0)
+		minimizeButton.Size = UDim2.new(0, 100, 0, 35)
+		minimizeButton.Text = "Minimize"
+	end
 end)
