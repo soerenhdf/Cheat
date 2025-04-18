@@ -177,14 +177,16 @@ UIS.InputEnded:Connect(function(input, gameProcessed)
 	if input.KeyCode == Enum.KeyCode.D then control.R = 0 end
 end)
 
--- Virtuellen Joystick von Roblox
-local virtualJoystick = require(game.ReplicatedStorage:WaitForChild("PlayerScripts"):WaitForChild("VirtualInputManager"):WaitForChild("VirtualJoystick"))
-
--- Joystick sichtbar oder unsichtbar je nach Menüzustand
-UIS.InputBegan:Connect(function(input)
+-- Joystick unsichtbar machen, wenn minimiert
+local function toggleJoystickVisibility()
 	if minimized then
-		virtualJoystick.Enabled = false
+		game:GetService("VirtualInputManager"):SetMouseIconVisibility(false)
 	else
-		virtualJoystick.Enabled = true
+		game:GetService("VirtualInputManager"):SetMouseIconVisibility(true)
 	end
+end
+
+-- Anpassen bei Menü minimiert oder nicht
+frame:GetPropertyChangedSignal("Visible"):Connect(function()
+	toggleJoystickVisibility()
 end)
