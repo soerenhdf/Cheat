@@ -22,9 +22,9 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 250)  -- Größe angepasst
-frame.Position = UDim2.new(0.5, -150, 0.5, -125)  -- Position angepasst
-frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- Dunkelgrau für den Hintergrund
+frame.Size = UDim2.new(0, 300, 0, 250)
+frame.Position = UDim2.new(0.5, -150, 0.5, -125)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.BorderSizePixel = 2
 frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 frame.Active = true
@@ -51,6 +51,17 @@ flyButton.Font = Enum.Font.SourceSans
 flyButton.TextSize = 20
 flyButton.Parent = frame
 
+-- Minimieren-Button oben links
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+minimizeButton.Position = UDim2.new(0, 5, 0, 5)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(100, 150, 250)
+minimizeButton.Text = "_"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.Font = Enum.Font.SourceSansBold
+minimizeButton.TextSize = 20
+minimizeButton.Parent = frame
+
 -- Schließen-Button oben rechts
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 30, 0, 30)
@@ -61,27 +72,6 @@ closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.Font = Enum.Font.SourceSansBold
 closeButton.TextSize = 20
 closeButton.Parent = frame
-
-closeButton.MouseButton1Click:Connect(function()
-	frame.Visible = false
-end)
-
--- Discord Link Button oben
-local discordButton = Instance.new("TextButton")
-discordButton.Size = UDim2.new(0.8, 0, 0, 40)
-discordButton.Position = UDim2.new(0.1, 0, 0, 40)
-discordButton.BackgroundColor3 = Color3.fromRGB(40, 120, 250)
-discordButton.Text = "Discord Join"
-discordButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-discordButton.Font = Enum.Font.SourceSans
-discordButton.TextSize = 20
-discordButton.Parent = frame
-
-discordButton.MouseButton1Click:Connect(function()
-    -- Öffnet den Discord-Link in einem Webbrowser
-    local url = "https://discord.gg/Q2dqRDaJ4Q"
-    game:GetService("GuiService"):OpenBrowserWindow(url)
-end)
 
 -- Fly Funktion
 local function startFlying()
@@ -130,6 +120,36 @@ flyButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+-- Minimieren-Funktion
+local minimized = false
+
+minimizeButton.MouseButton1Click:Connect(function()
+	if minimized then
+		frame.Size = UDim2.new(0, 300, 0, 250)
+		frame.Position = UDim2.new(0.5, -150, 0.5, -125)
+		minimizeButton.Text = "_"
+		flyButton.Visible = true
+		minimized = false
+		-- Joystick wieder anzeigen
+		mobileJoystick.Visible = true
+	else
+		frame.Size = UDim2.new(0, 50, 0, 40)
+		frame.Position = UDim2.new(0.5, -25, 0.5, -20)
+		minimizeButton.Text = "+"
+		flyButton.Visible = false
+		minimized = true
+		-- Joystick unsichtbar machen
+		mobileJoystick.Visible = false
+	end
+end)
+
+-- Schließen-Funktion
+closeButton.MouseButton1Click:Connect(function()
+	stopFlying()
+	frame.Visible = false
+	mobileJoystick.Visible = false
+end)
+
 -- Tastatureingaben (WASD + O für Menü)
 UIS.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
@@ -141,6 +161,12 @@ UIS.InputBegan:Connect(function(input, gameProcessed)
 	-- "O" zum Menü anzeigen/verstecken
 	if input.KeyCode == Enum.KeyCode.O then
 		frame.Visible = not frame.Visible
+		-- Joystick ein-/ausblenden
+		if not frame.Visible then
+			mobileJoystick.Visible = false
+		else
+			mobileJoystick.Visible = true
+		end
 	end
 end)
 
