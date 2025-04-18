@@ -130,16 +130,12 @@ minimizeButton.MouseButton1Click:Connect(function()
 		minimizeButton.Text = "_"
 		flyButton.Visible = true
 		minimized = false
-		-- Joystick wieder anzeigen
-		UIS.MouseBehavior = Enum.MouseBehavior.Default
 	else
 		frame.Size = UDim2.new(0, 50, 0, 40)
 		frame.Position = UDim2.new(0.5, -25, 0.5, -20)
 		minimizeButton.Text = "+"
 		flyButton.Visible = false
 		minimized = true
-		-- Joystick unsichtbar machen
-		UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
 	end
 end)
 
@@ -147,7 +143,6 @@ end)
 closeButton.MouseButton1Click:Connect(function()
 	stopFlying()
 	frame.Visible = false
-	UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
 end)
 
 -- Tastatureingaben (WASD + O für Menü)
@@ -177,16 +172,30 @@ UIS.InputEnded:Connect(function(input, gameProcessed)
 	if input.KeyCode == Enum.KeyCode.D then control.R = 0 end
 end)
 
--- Joystick unsichtbar machen, wenn minimiert
-local function toggleJoystickVisibility()
-	if minimized then
-		game:GetService("VirtualInputManager"):SetMouseIconVisibility(false)
-	else
-		game:GetService("VirtualInputManager"):SetMouseIconVisibility(true)
-	end
-end
+-- Menü verschieben, auch wenn minimiert
+local dragging = false
+local dragInput
+local dragStart
+local startPos
 
--- Anpassen bei Menü minimiert oder nicht
-frame:GetPropertyChangedSignal("Visible"):Connect(function()
-	toggleJoystickVisibility()
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+		input.Consumed = true
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+frame.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
 end)
