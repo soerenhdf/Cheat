@@ -66,6 +66,23 @@ closeButton.MouseButton1Click:Connect(function()
 	frame.Visible = false
 end)
 
+-- Discord Link Button oben
+local discordButton = Instance.new("TextButton")
+discordButton.Size = UDim2.new(0.8, 0, 0, 40)
+discordButton.Position = UDim2.new(0.1, 0, 0, 40)
+discordButton.BackgroundColor3 = Color3.fromRGB(40, 120, 250)
+discordButton.Text = "Discord Join"
+discordButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+discordButton.Font = Enum.Font.SourceSans
+discordButton.TextSize = 20
+discordButton.Parent = frame
+
+discordButton.MouseButton1Click:Connect(function()
+    -- Öffnet den Discord-Link in einem Webbrowser
+    local url = "https://discord.gg/Q2dqRDaJ4Q"
+    game:GetService("GuiService"):OpenBrowserWindow(url)
+end)
+
 -- Fly Funktion
 local function startFlying()
 	if not flying then
@@ -89,6 +106,8 @@ local function startFlying()
 				flyGyro.CFrame = cam.CFrame
 			end
 		end)
+	else
+		print("Already flying!")
 	end
 end
 
@@ -97,6 +116,7 @@ local function stopFlying()
 	if flyVelocity then flyVelocity:Destroy() end
 	if flyGyro then flyGyro:Destroy() end
 	RunService:UnbindFromRenderStep("Flying")
+	print("Stopped flying")
 end
 
 -- Button klick für Fly
