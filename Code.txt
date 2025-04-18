@@ -5,59 +5,44 @@ local playerGui = player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
+-- Services
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
 -- Fly Variablen
 local flying = false
-local flyVelocity = nil
-local flyGyro = nil
+local flyVelocity
+local flyGyro
+local control = {F = 0, B = 0, L = 0, R = 0}
 
--- GUI Setup
+-- GUI erstellen
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "LeeresMenue"
+screenGui.Name = "FlyMenue"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Hauptmenü
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 300, 0, 200)
 frame.Position = UDim2.new(0.5, -150, 0.5, -100)
 frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 frame.BorderSizePixel = 0
-frame.Active = true -- notwendig für Drag
-frame.Draggable = true -- ermöglicht Verschieben
+frame.Active = true
+frame.Draggable = true
 frame.Parent = screenGui
 
--- Titelleiste
 local title = Instance.new("TextLabel")
-title.Text = "Leeres Menü"
-title.Size = UDim2.new(1, -40, 0, 40)
-title.Position = UDim2.new(0, 0, 0, 0)
+title.Text = "Fly Menü"
+title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 24
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Padding = UDim.new(0, 10)
 title.Parent = frame
 
--- Schließen-Button
-local closeBtn = Instance.new("TextButton")
-closeBtn.Text = "X"
-closeBtn.Size = UDim2.new(0, 40, 0, 40)
-closeBtn.Position = UDim2.new(1, -40, 0, 0)
-closeBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.Font = Enum.Font.SourceSansBold
-closeBtn.TextSize = 20
-closeBtn.Parent = frame
-
-closeBtn.MouseButton1Click:Connect(function()
-	frame.Visible = false
-end)
-
--- Fly Button
+-- Fly-Button
 local flyButton = Instance.new("TextButton")
 flyButton.Size = UDim2.new(0.8, 0, 0, 40)
-flyButton.Position = UDim2.new(0.1, 0, 0, 60)
+flyButton.Position = UDim2.new(0.1, 0, 0, 80)
 flyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 flyButton.Text = "🛩️ Fly Mode: OFF"
 flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -65,17 +50,27 @@ flyButton.Font = Enum.Font.SourceSans
 flyButton.TextSize = 20
 flyButton.Parent = frame
 
--- Fly Logic
-local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+-- Schließen-Button oben rechts
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.new(1,1,1)
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextSize = 20
+closeButton.Parent = frame
 
-local control = {F = 0, B = 0, L = 0, R = 0}
+closeButton.MouseButton1Click:Connect(function()
+	frame.Visible = false
+end)
 
+-- Fly Funktion
 local function startFlying()
 	if not flying then
 		flying = true
 		flyVelocity = Instance.new("BodyVelocity")
-		flyVelocity.Velocity = Vector3.new(0,0,0)
+		flyVelocity.Velocity = Vector3.zero
 		flyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
 		flyVelocity.Parent = humanoidRootPart
 
@@ -85,7 +80,7 @@ local function startFlying()
 		flyGyro.P = 10000
 		flyGyro.Parent = humanoidRootPart
 
-		RunService.RenderStepped:Connect(function()
+		RunService:BindToRenderStep("Flying", Enum.RenderPriority.Character.Value, function()
 			if flying then
 				local cam = workspace.CurrentCamera
 				local moveVec = (cam.CFrame.LookVector * control.F + -cam.CFrame.LookVector * control.B + -cam.CFrame.RightVector * control.L + cam.CFrame.RightVector * control.R)
@@ -100,25 +95,10 @@ local function stopFlying()
 	flying = false
 	if flyVelocity then flyVelocity:Destroy() end
 	if flyGyro then flyGyro:Destroy() end
+	RunService:UnbindFromRenderStep("Flying")
 end
 
--- Tastatursteuerung
-UIS.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then return end
-	if input.KeyCode == Enum.KeyCode.W then control.F = 1 end
-	if input.KeyCode == Enum.KeyCode.S then control.B = 1 end
-	if input.KeyCode == Enum.KeyCode.A then control.L = 1 end
-	if input.KeyCode == Enum.KeyCode.D then control.R = 1 end
-end)
-
-UIS.InputEnded:Connect(function(input, gameProcessed)
-	if input.KeyCode == Enum.KeyCode.W then control.F = 0 end
-	if input.KeyCode == Enum.KeyCode.S then control.B = 0 end
-	if input.KeyCode == Enum.KeyCode.A then control.L = 0 end
-	if input.KeyCode == Enum.KeyCode.D then control.R = 0 end
-end)
-
--- Fly Button
+-- Button klick für Fly
 flyButton.MouseButton1Click:Connect(function()
 	if flying then
 		stopFlying()
@@ -127,4 +107,25 @@ flyButton.MouseButton1Click:Connect(function()
 		startFlying()
 		flyButton.Text = "🛩️ Fly Mode: ON"
 	end
+end)
+
+-- Tastatureingaben (WASD + O für Menü)
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.W then control.F = 1 end
+	if input.KeyCode == Enum.KeyCode.S then control.B = 1 end
+	if input.KeyCode == Enum.KeyCode.A then control.L = 1 end
+	if input.KeyCode == Enum.KeyCode.D then control.R = 1 end
+
+	-- "O" zum Menü anzeigen/verstecken
+	if input.KeyCode == Enum.KeyCode.O then
+		frame.Visible = not frame.Visible
+	end
+end)
+
+UIS.InputEnded:Connect(function(input, gameProcessed)
+	if input.KeyCode == Enum.KeyCode.W then control.F = 0 end
+	if input.KeyCode == Enum.KeyCode.S then control.B = 0 end
+	if input.KeyCode == Enum.KeyCode.A then control.L = 0 end
+	if input.KeyCode == Enum.KeyCode.D then control.R = 0 end
 end)
