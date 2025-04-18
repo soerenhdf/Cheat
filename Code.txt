@@ -131,7 +131,7 @@ minimizeButton.MouseButton1Click:Connect(function()
 		flyButton.Visible = true
 		minimized = false
 		-- Joystick wieder anzeigen
-		mobileJoystick.Visible = true
+		UIS.MouseBehavior = Enum.MouseBehavior.Default
 	else
 		frame.Size = UDim2.new(0, 50, 0, 40)
 		frame.Position = UDim2.new(0.5, -25, 0.5, -20)
@@ -139,7 +139,7 @@ minimizeButton.MouseButton1Click:Connect(function()
 		flyButton.Visible = false
 		minimized = true
 		-- Joystick unsichtbar machen
-		mobileJoystick.Visible = false
+		UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
 	end
 end)
 
@@ -147,7 +147,7 @@ end)
 closeButton.MouseButton1Click:Connect(function()
 	stopFlying()
 	frame.Visible = false
-	mobileJoystick.Visible = false
+	UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
 end)
 
 -- Tastatureingaben (WASD + O für Menü)
@@ -163,9 +163,9 @@ UIS.InputBegan:Connect(function(input, gameProcessed)
 		frame.Visible = not frame.Visible
 		-- Joystick ein-/ausblenden
 		if not frame.Visible then
-			mobileJoystick.Visible = false
+			UIS.MouseBehavior = Enum.MouseBehavior.LockCenter
 		else
-			mobileJoystick.Visible = true
+			UIS.MouseBehavior = Enum.MouseBehavior.Default
 		end
 	end
 end)
@@ -177,54 +177,14 @@ UIS.InputEnded:Connect(function(input, gameProcessed)
 	if input.KeyCode == Enum.KeyCode.D then control.R = 0 end
 end)
 
--- Virtuellen Joystick für mobile Steuerung erstellen
-local mobileJoystick = Instance.new("Frame")
-mobileJoystick.Size = UDim2.new(0, 150, 0, 150)
-mobileJoystick.Position = UDim2.new(0, 50, 1, -200)
-mobileJoystick.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-mobileJoystick.BorderSizePixel = 2
-mobileJoystick.Parent = screenGui
+-- Virtuellen Joystick von Roblox
+local virtualJoystick = require(game.ReplicatedStorage:WaitForChild("PlayerScripts"):WaitForChild("VirtualInputManager"):WaitForChild("VirtualJoystick"))
 
-local innerCircle = Instance.new("Frame")
-innerCircle.Size = UDim2.new(0, 60, 0, 60)
-innerCircle.Position = UDim2.new(0.5, -30, 0.5, -30)
-innerCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-innerCircle.BorderSizePixel = 2
-innerCircle.Parent = mobileJoystick
-
--- Steuerung per Touch auf mobilen Geräten
-local dragging = false
-local initialPos = Vector2.zero
-
-mobileJoystick.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		initialPos = input.Position
-	end
-end)
-
-mobileJoystick.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.Touch then
-		local delta = input.Position - initialPos
-		local moveX = math.clamp(delta.X / 75, -1, 1)
-		local moveY = math.clamp(delta.Y / 75, -1, 1)
-		
-		control.L = -moveX
-		control.R = moveX
-		control.F = moveY
-		control.B = -moveY
-		
-		innerCircle.Position = UDim2.new(0.5, delta.X, 0.5, delta.Y)
-	end
-end)
-
-mobileJoystick.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch then
-		dragging = false
-		control.L = 0
-		control.R = 0
-		control.F = 0
-		control.B = 0
-		innerCircle.Position = UDim2.new(0.5, -30, 0.5, -30)
+-- Joystick sichtbar oder unsichtbar je nach Menüzustand
+UIS.InputBegan:Connect(function(input)
+	if minimized then
+		virtualJoystick.Enabled = false
+	else
+		virtualJoystick.Enabled = true
 	end
 end)
