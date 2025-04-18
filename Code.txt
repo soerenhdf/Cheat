@@ -22,10 +22,11 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 200)
-frame.Position = UDim2.new(0.5, -150, 0.5, -100)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-frame.BorderSizePixel = 0
+frame.Size = UDim2.new(0, 300, 0, 250)  -- Größe angepasst
+frame.Position = UDim2.new(0.5, -150, 0.5, -125)  -- Position angepasst
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- Dunkelgrau für den Hintergrund
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 frame.Active = true
 frame.Draggable = true
 frame.Parent = screenGui
