@@ -4,6 +4,7 @@ local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
 
 -- Services
 local UIS = game:GetService("UserInputService")
@@ -200,11 +201,11 @@ frame.InputEnded:Connect(function(input)
 	end
 end)
 
--- Wenn das Menü minimiert ist, können die Bewegungen des Spielers nicht gestört werden
+-- Standardbewegung (beim Fliegen noch immer in Betrieb)
 RunService.Heartbeat:Connect(function()
 	if not flying then
 		local moveDirection = Vector3.new(control.R - control.L, 0, control.F - control.B)
 		local speed = 16 -- Standard-Laufgeschwindigkeit
-		character:Move(moveDirection * speed)
+		humanoidRootPart.Velocity = moveDirection * speed
 	end
 end)
