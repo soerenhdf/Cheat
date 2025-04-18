@@ -24,6 +24,7 @@ keyTitle.Font = Enum.Font.SourceSansBold
 keyTitle.TextSize = 22
 keyTitle.BackgroundTransparency = 1
 
+-- Key Input (Password-like behavior)
 local keyInput = Instance.new("TextBox", keyFrame)
 keyInput.Size = UDim2.new(0, 220, 0, 30)
 keyInput.Position = UDim2.new(0.5, -110, 0.5, -15)
@@ -31,7 +32,18 @@ keyInput.TextColor3 = Color3.new(1, 1, 1)
 keyInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 keyInput.Font = Enum.Font.SourceSans
 keyInput.TextSize = 18
-keyInput.PlaceholderText = "Enter #crash-key"
+keyInput.PlaceholderText = "Enter zhe key from crash_stars dc"
+keyInput.TextTransparency = 1  -- Makes the text invisible
+
+-- Enable password-like input behavior
+keyInput.ClearTextOnFocus = false
+keyInput.Text = ""
+keyInput.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        local text = keyInput.Text
+        keyInput.Text = string.rep("*", #text)  -- Replace input with asterisks
+    end
+end)
 
 local submitBtn = Instance.new("TextButton", keyFrame)
 submitBtn.Size = UDim2.new(0, 100, 0, 30)
@@ -212,48 +224,28 @@ local closeBtn = Instance.new("TextButton", frame)
 closeBtn.Size = UDim2.new(0, 25, 0, 25)
 closeBtn.Position = UDim2.new(1, -30, 0, 5)
 closeBtn.Text = "X"
-closeBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 closeBtn.TextColor3 = Color3.new(1, 1, 1)
 closeBtn.Font = Enum.Font.SourceSansBold
 closeBtn.TextSize = 18
 
--- Minimize Functionality
+-- Button Functions
 minimizeBtn.MouseButton1Click:Connect(function()
     frame.Visible = false
-    local miniButton = Instance.new("TextButton", gui)
-    miniButton.Size = UDim2.new(0, 120, 0, 30)
-    miniButton.Position = UDim2.new(0.1, 0, 0.9, 0)
-    miniButton.Text = "Open Menu"
-    miniButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    miniButton.TextColor3 = Color3.new(1, 1, 1)
-    miniButton.Font = Enum.Font.SourceSansBold
-    miniButton.TextSize = 18
-    miniButton.Draggable = true
-    miniButton.Active = true
-
-    miniButton.MouseButton1Click:Connect(function()
-        frame.Visible = true
-        miniButton:Destroy()
-    end)
 end)
 
--- Close Functionality
 closeBtn.MouseButton1Click:Connect(function()
-    stopFly()
-    stopTPAura()
-    disableWallhack()
     gui:Destroy()
 end)
 
--- Key validation and menu activation
+-- Submit Button
 submitBtn.MouseButton1Click:Connect(function()
     if keyInput.Text == "#crash-key" then
         keyRequested = false
         keyFrame.Visible = false
         frame.Visible = true
-        print("Access granted!")
     else
-        keyInput.Text = ""
-        keyInput.PlaceholderText = "Invalid key, try again!"
+        keyRequested = true
     end
 end)
+
