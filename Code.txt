@@ -3,13 +3,13 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- GUI
+-- GUI Setup
 local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
 gui.Name = "CrashStarsMenu"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 250, 0, 300)
+frame.Size = UDim2.new(0, 260, 0, 310)
 frame.Position = UDim2.new(0.05, 0, 0.2, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.Active = true
@@ -36,25 +36,22 @@ local function createButton(name, yPos)
 	return btn
 end
 
--- Fly
+-- Fly Feature
 local flyEnabled = false
-local flySpeed = 80
 local flyConn
 local function startFly()
-	local character = LocalPlayer.Character
-	if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-
-	local root = character.HumanoidRootPart
-	local bodyVel = Instance.new("BodyVelocity")
-	bodyVel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-	bodyVel.Velocity = Vector3.zero
-	bodyVel.Parent = root
-
+	local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+	local bv = Instance.new("BodyVelocity", root)
+	bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+	bv.Velocity = Vector3.zero
 	flyConn = RunService.RenderStepped:Connect(function()
-		local moveDir = LocalPlayer:GetMouse().Hit.Position - root.Position
-		bodyVel.Velocity = (Camera.CFrame.LookVector * flySpeed)
+		local move = Vector3.zero
+		if LocalPlayer.Character:FindFirstChild("Humanoid") then
+			move = Camera.CFrame.LookVector * (LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 and 100 or 0)
+		end
+		bv.Velocity = move
 	end)
-
 	flyEnabled = true
 end
 
@@ -62,10 +59,8 @@ local function stopFly()
 	if flyConn then flyConn:Disconnect() flyConn = nil end
 	local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 	if root then
-		for _, obj in ipairs(root:GetChildren()) do
-			if obj:IsA("BodyVelocity") then
-				obj:Destroy()
-			end
+		for _, c in pairs(root:GetChildren()) do
+			if c:IsA("BodyVelocity") then c:Destroy() end
 		end
 	end
 	flyEnabled = false
@@ -79,23 +74,22 @@ local function startAura()
 	auraConn = RunService.RenderStepped:Connect(function()
 		local myChar = LocalPlayer.Character
 		if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
-
 		local root = myChar.HumanoidRootPart
-		local closest, dist = nil, math.huge
 
-		for _, plr in pairs(Players:GetPlayers()) do
+		local closest, dist = nil, math.huge
+		for _, plr in ipairs(Players:GetPlayers()) do
 			if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-				local d = (root.Position - plr.Character.HumanoidRootPart.Position).magnitude
+				local d = (root.Position - plr.Character.HumanoidRootPart.Position).Magnitude
 				if d < dist then
-					dist = d
 					closest = plr
+					dist = d
 				end
 			end
 		end
 
-		if closest and closest.Character then
+		if closest then
 			local pos = closest.Character.HumanoidRootPart.Position
-			local offset = Vector3.new(math.random(-5,5), math.random(3,6), math.random(-5,5))
+			local offset = Vector3.new(math.random(-8,8), math.random(4,7), math.random(-8,8))
 			root.CFrame = CFrame.new(pos + offset, pos)
 		end
 	end)
@@ -110,74 +104,74 @@ end
 local wallhackEnabled = false
 local highlights = {}
 local function startWallhack()
-	for _, plr in pairs(Players:GetPlayers()) do
-		if plr ~= LocalPlayer and plr.Character then
-			local highlight = Instance.new("BoxHandleAdornment")
-			highlight.Adornee = plr.Character:FindFirstChild("HumanoidRootPart")
-			highlight.AlwaysOnTop = true
-			highlight.ZIndex = 5
-			highlight.Size = Vector3.new(4, 5, 2)
-			highlight.Color3 = Color3.fromRGB(255, 0, 0)
-			highlight.Transparency = 0.3
-			highlight.Parent = gui
-			table.insert(highlights, highlight)
+	wallhackEnabled = true
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			local box = Instance.new("BoxHandleAdornment")
+			box.Adornee = plr.Character.HumanoidRootPart
+			box.AlwaysOnTop = true
+			box.ZIndex = 5
+			box.Size = Vector3.new(4,5,2)
+			box.Color3 = Color3.fromRGB(255,0,0)
+			box.Transparency = 0.3
+			box.Parent = gui
+			table.insert(highlights, box)
 		end
 	end
-	wallhackEnabled = true
 end
 
 local function stopWallhack()
-	for _, h in pairs(highlights) do h:Destroy() end
+	for _, box in ipairs(highlights) do box:Destroy() end
 	highlights = {}
 	wallhackEnabled = false
 end
 
 -- Buttons
 local flyBtn = createButton("Toggle Fly", 50)
-local auraBtn = createButton("Toggle TP Aura", 90)
-local wallBtn = createButton("Toggle Wallhack", 130)
-
 flyBtn.MouseButton1Click:Connect(function()
 	if flyEnabled then stopFly() else startFly() end
 end)
 
+local auraBtn = createButton("Toggle TP Aura", 90)
 auraBtn.MouseButton1Click:Connect(function()
 	if auraEnabled then stopAura() else startAura() end
 end)
 
+local wallBtn = createButton("Toggle Wallhack", 130)
 wallBtn.MouseButton1Click:Connect(function()
 	if wallhackEnabled then stopWallhack() else startWallhack() end
 end)
 
--- Minimize / Close
-local minimizeButton = Instance.new("TextButton", frame)
-minimizeButton.Size = UDim2.new(0, 25, 0, 25)
-minimizeButton.Position = UDim2.new(1, -60, 0, 5)
-minimizeButton.Text = "-"
-minimizeButton.TextColor3 = Color3.new(1, 1, 1)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-minimizeButton.Font = Enum.Font.SourceSansBold
-minimizeButton.TextSize = 18
+-- Minimieren / Schließen
+local minimizeBtn = Instance.new("TextButton", frame)
+minimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+minimizeBtn.Position = UDim2.new(1, -60, 0, 5)
+minimizeBtn.Text = "-"
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+minimizeBtn.TextColor3 = Color3.new(1,1,1)
+minimizeBtn.Font = Enum.Font.SourceSansBold
+minimizeBtn.TextSize = 18
 
-local closeButton = Instance.new("TextButton", frame)
-closeButton.Size = UDim2.new(0, 25, 0, 25)
-closeButton.Position = UDim2.new(1, -30, 0, 5)
-closeButton.Text = "X"
-closeButton.TextColor3 = Color3.new(1, 1, 1)
-closeButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-closeButton.Font = Enum.Font.SourceSansBold
-closeButton.TextSize = 18
+local closeBtn = Instance.new("TextButton", frame)
+closeBtn.Size = UDim2.new(0, 25, 0, 25)
+closeBtn.Position = UDim2.new(1, -30, 0, 5)
+closeBtn.Text = "X"
+closeBtn.BackgroundColor3 = Color3.fromRGB(150,0,0)
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 18
 
--- Minimieren
-minimizeButton.MouseButton1Click:Connect(function()
+-- Mini-Button (für minimierten Zustand)
+local miniButton
+
+minimizeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
-	local miniButton = Instance.new("TextButton", gui)
-	miniButton.Name = "MiniButton"
+	miniButton = Instance.new("TextButton", gui)
 	miniButton.Size = UDim2.new(0, 120, 0, 30)
 	miniButton.Position = UDim2.new(0.1, 0, 0.9, 0)
 	miniButton.Text = "Open Menu"
-	miniButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	miniButton.TextColor3 = Color3.new(1, 1, 1)
+	miniButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	miniButton.TextColor3 = Color3.new(1,1,1)
 	miniButton.Font = Enum.Font.SourceSansBold
 	miniButton.TextSize = 18
 	miniButton.Draggable = true
@@ -189,8 +183,7 @@ minimizeButton.MouseButton1Click:Connect(function()
 	end)
 end)
 
--- Schließen
-closeButton.MouseButton1Click:Connect(function()
+closeBtn.MouseButton1Click:Connect(function()
 	stopFly()
 	stopAura()
 	stopWallhack()
