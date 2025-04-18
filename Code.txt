@@ -1,12 +1,13 @@
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
 local root = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local Camera = game.Workspace.CurrentCamera
 
--- GUI Setup
+-- GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "ModMenu"
 gui.ResetOnSpawn = false
@@ -28,7 +29,6 @@ title.TextColor3 = Color3.new(1, 1, 1)
 title.TextSize = 22
 title.Font = Enum.Font.SourceSansBold
 
--- Close Button
 local closeButton = Instance.new("TextButton", frame)
 closeButton.Size = UDim2.new(0, 30, 0, 30)
 closeButton.Position = UDim2.new(1, -35, 0, 5)
@@ -38,7 +38,15 @@ closeButton.TextColor3 = Color3.new(1, 1, 1)
 closeButton.Font = Enum.Font.SourceSansBold
 closeButton.TextSize = 18
 
--- Fly Button
+local minimizeButton = Instance.new("TextButton", frame)
+minimizeButton.Position = UDim2.new(1, -70, 0, 5)
+minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+minimizeButton.Text = "-"
+minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+minimizeButton.TextColor3 = Color3.new(1, 1, 1)
+minimizeButton.Font = Enum.Font.SourceSansBold
+minimizeButton.TextSize = 18
+
 local flyButton = Instance.new("TextButton", frame)
 flyButton.Position = UDim2.new(0.5, -75, 0.3, 0)
 flyButton.Size = UDim2.new(0, 150, 0, 40)
@@ -48,7 +56,6 @@ flyButton.TextColor3 = Color3.new(1, 1, 1)
 flyButton.Font = Enum.Font.SourceSans
 flyButton.TextSize = 20
 
--- Aura Button
 local auraButton = Instance.new("TextButton", frame)
 auraButton.Position = UDim2.new(0.5, -75, 0.5, 0)
 auraButton.Size = UDim2.new(0, 150, 0, 40)
@@ -58,56 +65,44 @@ auraButton.TextColor3 = Color3.new(1, 1, 1)
 auraButton.Font = Enum.Font.SourceSans
 auraButton.TextSize = 20
 
--- Minimize Button
-local minimizeButton = Instance.new("TextButton", frame)
-minimizeButton.Position = UDim2.new(0.5, -50, 0.8, 0)
-minimizeButton.Size = UDim2.new(0, 100, 0, 35)
-minimizeButton.Text = "-"
-minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-minimizeButton.TextColor3 = Color3.new(1, 1, 1)
-minimizeButton.Font = Enum.Font.SourceSans
-minimizeButton.TextSize = 24
+local wallhackButton = Instance.new("TextButton", frame)
+wallhackButton.Position = UDim2.new(0.5, -75, 0.7, 0)
+wallhackButton.Size = UDim2.new(0, 150, 0, 40)
+wallhackButton.Text = "Wallhack"
+wallhackButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+wallhackButton.TextColor3 = Color3.new(1, 1, 1)
+wallhackButton.Font = Enum.Font.SourceSans
+wallhackButton.TextSize = 20
 
--- Variables
+-- Fly
 local flying = false
-local flyVelocity
-local teleporting = false
-local auraConnection
-local minimized = false
-
--- Fly Function
-local function stopFly()
-	flying = false
-	if flyVelocity then
-		flyVelocity:Destroy()
-		flyVelocity = nil
-	end
-end
-
+local flyConnection
 local function startFly()
-	if not flyVelocity then
-		flyVelocity = Instance.new("BodyVelocity")
-		flyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-		flyVelocity.Parent = root
-	end
 	flying = true
-	RunService.RenderStepped:Connect(function()
+	flyConnection = RunService.RenderStepped:Connect(function()
 		if flying then
-			local move = humanoid.MoveDirection
-			flyVelocity.Velocity = move * 100
+			local dir = humanoid.MoveDirection
+			root.Velocity = dir * 100
 		end
 	end)
 end
 
+local function stopFly()
+	flying = false
+	if flyConnection then flyConnection:Disconnect() end
+end
+
 -- TP Aura
+local auraActive = false
+local auraConnection
+
 local function getClosestPlayer()
-	local closest
-	local shortest = math.huge
-	for _, p in ipairs(Players:GetPlayers()) do
+	local closest, dist = nil, math.huge
+	for _, p in pairs(Players:GetPlayers()) do
 		if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-			local dist = (p.Character.HumanoidRootPart.Position - root.Position).Magnitude
-			if dist < shortest then
-				shortest = dist
+			local d = (p.Character.HumanoidRootPart.Position - root.Position).Magnitude
+			if d < dist then
+				dist = d
 				closest = p
 			end
 		end
@@ -115,30 +110,67 @@ local function getClosestPlayer()
 	return closest
 end
 
-local function stopAura()
-	teleporting = false
-	if auraConnection then
-		auraConnection:Disconnect()
-		auraConnection = nil
-	end
-end
-
 local function startAura()
-	teleporting = true
+	auraActive = true
 	auraConnection = RunService.Heartbeat:Connect(function()
 		local target = getClosestPlayer()
 		if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
 			local pos = target.Character.HumanoidRootPart.Position
 			local offset = Vector3.new(math.random(-20, 20), math.random(6, 10), math.random(-20, 20))
-			local newPos = pos + offset
-			local direction = (pos - root.Position).Unit
-			root.CFrame = CFrame.lookAt(newPos, pos)
-			root.Velocity = direction * 250
+			local targetPos = pos + offset
+			root.CFrame = CFrame.lookAt(targetPos, pos)
+			root.Velocity = (pos - root.Position).Unit * 150
 		end
 	end)
 end
 
--- Button Events
+local function stopAura()
+	auraActive = false
+	if auraConnection then auraConnection:Disconnect() end
+end
+
+-- Wallhack (Box ESP)
+local wallhackOn = false
+local espFolder = Instance.new("Folder", gui)
+espFolder.Name = "ESPFolder"
+
+local function clearESP()
+	espFolder:ClearAllChildren()
+end
+
+local function createESP(player)
+	if not player.Character then return end
+	local part = Instance.new("BoxHandleAdornment")
+	part.Name = player.Name .. "_ESP"
+	part.Size = Vector3.new(4, 6, 2)
+	part.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
+	part.AlwaysOnTop = true
+	part.ZIndex = 10
+	part.Color3 = Color3.new(1, 0, 0)
+	part.Transparency = 0.3
+	part.Parent = espFolder
+end
+
+local function startWallhack()
+	wallhackOn = true
+	RunService.RenderStepped:Connect(function()
+		if wallhackOn then
+			clearESP()
+			for _, p in pairs(Players:GetPlayers()) do
+				if p ~= player then
+					createESP(p)
+				end
+			end
+		end
+	end)
+end
+
+local function stopWallhack()
+	wallhackOn = false
+	clearESP()
+end
+
+-- Button Actions
 flyButton.MouseButton1Click:Connect(function()
 	if flying then
 		stopFly()
@@ -152,7 +184,7 @@ flyButton.MouseButton1Click:Connect(function()
 end)
 
 auraButton.MouseButton1Click:Connect(function()
-	if teleporting then
+	if auraActive then
 		stopAura()
 		auraButton.Text = "TP Aura"
 	else
@@ -163,34 +195,44 @@ auraButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+wallhackButton.MouseButton1Click:Connect(function()
+	if wallhackOn then
+		stopWallhack()
+		wallhackButton.Text = "Wallhack"
+	else
+		startWallhack()
+		wallhackButton.Text = "Stop Wallhack"
+	end
+end)
+
 minimizeButton.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	if minimized then
-		for _, child in pairs(frame:GetChildren()) do
-			if child ~= minimizeButton then
-				child.Visible = false
+	frame.Size = UDim2.new(0, 100, 0, 30)
+	minimizeButton.Visible = false
+	for _, c in pairs(frame:GetChildren()) do
+		if c:IsA("TextButton") or c:IsA("TextLabel") then
+			if c ~= minimizeButton and c ~= closeButton then
+				c.Visible = false
 			end
 		end
-		frame.Size = UDim2.new(0, 100, 0, 30)
-		minimizeButton.Size = UDim2.new(1, 0, 1, 0)
-		minimizeButton.Text = "+"
-		stopFly()
-		stopAura()
-		flyButton.Text = "Fly"
-		auraButton.Text = "TP Aura"
-	else
-		for _, child in pairs(frame:GetChildren()) do
-			child.Visible = true
-		end
-		frame.Size = UDim2.new(0, 300, 0, 300)
-		minimizeButton.Position = UDim2.new(0.5, -50, 0.8, 0)
-		minimizeButton.Size = UDim2.new(0, 100, 0, 35)
-		minimizeButton.Text = "-"
 	end
+	stopFly()
+	stopAura()
+	stopWallhack()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
 	stopFly()
 	stopAura()
+	stopWallhack()
 	gui:Destroy()
+end)
+
+-- Menü wieder aufklappen (wenn minimiert)
+frame.MouseButton1Click:Connect(function()
+	if frame.Size == UDim2.new(0, 100, 0, 30) then
+		frame.Size = UDim2.new(0, 300, 0, 300)
+		for _, c in pairs(frame:GetChildren()) do
+			c.Visible = true
+		end
+	end
 end)
