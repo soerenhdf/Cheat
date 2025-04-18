@@ -28,6 +28,17 @@ title.TextColor3 = Color3.new(1, 1, 1)
 title.TextSize = 22
 title.Font = Enum.Font.SourceSansBold
 
+-- Close Button
+local closeButton = Instance.new("TextButton", frame)
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.Text = "X"
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextSize = 18
+
+-- Fly Button
 local flyButton = Instance.new("TextButton", frame)
 flyButton.Position = UDim2.new(0.5, -75, 0.3, 0)
 flyButton.Size = UDim2.new(0, 150, 0, 40)
@@ -37,6 +48,7 @@ flyButton.TextColor3 = Color3.new(1, 1, 1)
 flyButton.Font = Enum.Font.SourceSans
 flyButton.TextSize = 20
 
+-- Aura Button
 local auraButton = Instance.new("TextButton", frame)
 auraButton.Position = UDim2.new(0.5, -75, 0.5, 0)
 auraButton.Size = UDim2.new(0, 150, 0, 40)
@@ -46,14 +58,15 @@ auraButton.TextColor3 = Color3.new(1, 1, 1)
 auraButton.Font = Enum.Font.SourceSans
 auraButton.TextSize = 20
 
+-- Minimize Button
 local minimizeButton = Instance.new("TextButton", frame)
 minimizeButton.Position = UDim2.new(0.5, -50, 0.8, 0)
 minimizeButton.Size = UDim2.new(0, 100, 0, 35)
-minimizeButton.Text = "Minimize"
+minimizeButton.Text = "-"
 minimizeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 minimizeButton.TextColor3 = Color3.new(1, 1, 1)
 minimizeButton.Font = Enum.Font.SourceSans
-minimizeButton.TextSize = 18
+minimizeButton.TextSize = 24
 
 -- Variables
 local flying = false
@@ -62,7 +75,7 @@ local teleporting = false
 local auraConnection
 local minimized = false
 
--- Functions
+-- Fly Function
 local function stopFly()
 	flying = false
 	if flyVelocity then
@@ -86,6 +99,7 @@ local function startFly()
 	end)
 end
 
+-- TP Aura
 local function getClosestPlayer()
 	local closest
 	local shortest = math.huge
@@ -115,11 +129,11 @@ local function startAura()
 		local target = getClosestPlayer()
 		if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
 			local pos = target.Character.HumanoidRootPart.Position
-			local offset = Vector3.new(math.random(-15, 15), math.random(5, 8), math.random(-15, 15))
+			local offset = Vector3.new(math.random(-20, 20), math.random(6, 10), math.random(-20, 20))
 			local newPos = pos + offset
 			local direction = (pos - root.Position).Unit
 			root.CFrame = CFrame.lookAt(newPos, pos)
-			root.Velocity = direction * 200
+			root.Velocity = direction * 250
 		end
 	end)
 end
@@ -130,7 +144,7 @@ flyButton.MouseButton1Click:Connect(function()
 		stopFly()
 		flyButton.Text = "Fly"
 	else
-		stopAura() -- Nur ein Mod gleichzeitig
+		stopAura()
 		startFly()
 		flyButton.Text = "Stop Fly"
 		auraButton.Text = "TP Aura"
@@ -142,7 +156,7 @@ auraButton.MouseButton1Click:Connect(function()
 		stopAura()
 		auraButton.Text = "TP Aura"
 	else
-		stopFly() -- Nur ein Mod gleichzeitig
+		stopFly()
 		startAura()
 		auraButton.Text = "Stop Aura"
 		flyButton.Text = "Fly"
@@ -171,6 +185,12 @@ minimizeButton.MouseButton1Click:Connect(function()
 		frame.Size = UDim2.new(0, 300, 0, 300)
 		minimizeButton.Position = UDim2.new(0.5, -50, 0.8, 0)
 		minimizeButton.Size = UDim2.new(0, 100, 0, 35)
-		minimizeButton.Text = "Minimize"
+		minimizeButton.Text = "-"
 	end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+	stopFly()
+	stopAura()
+	gui:Destroy()
 end)
