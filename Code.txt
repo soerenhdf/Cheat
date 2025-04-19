@@ -1,8 +1,8 @@
--- Initial Setup
+-- Setup für das Menü
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Frame for the menu
+-- Menü Frame
 local menuFrame = Instance.new("Frame")
 menuFrame.Size = UDim2.new(0, 300, 0, 500)
 menuFrame.Position = UDim2.new(0, 50, 0, 50)
@@ -10,7 +10,7 @@ menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 menuFrame.BackgroundTransparency = 0.5
 menuFrame.Parent = screenGui
 
--- Menu title
+-- Menü Titel
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, 0, 0, 40)
 titleLabel.Position = UDim2.new(0, 0, 0, 0)
@@ -21,7 +21,7 @@ titleLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 titleLabel.BackgroundTransparency = 0.5
 titleLabel.Parent = menuFrame
 
--- Buttons for different cheats
+-- Buttons für die Cheats
 local flyButton = Instance.new("TextButton")
 flyButton.Size = UDim2.new(1, 0, 0, 40)
 flyButton.Position = UDim2.new(0, 0, 0, 40)
@@ -72,7 +72,7 @@ closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 closeButton.BackgroundTransparency = 0.5
 closeButton.Parent = menuFrame
 
--- Functionality for Fly
+-- Fly Funktion
 local isFlying = false
 local bodyVelocity = nil
 flyButton.MouseButton1Click:Connect(function()
@@ -90,29 +90,28 @@ flyButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Functionality for TP Aura
+-- TP Aura Funktion
 local function tpAura()
     local player = game.Players.LocalPlayer
     local character = player.Character
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    while true do
+    while isFlying do
         wait(0.1)
-        if not isFlying then
-            local closestPlayer = nil
-            local minDistance = 100000
-            for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local otherPlayerRootPart = otherPlayer.Character.HumanoidRootPart
-                    local distance = (humanoidRootPart.Position - otherPlayerRootPart.Position).Magnitude
-                    if distance < minDistance then
-                        closestPlayer = otherPlayerRootPart
-                        minDistance = distance
-                    end
+        if not isFlying then break end
+        local closestPlayer = nil
+        local minDistance = 100000
+        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+            if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local otherPlayerRootPart = otherPlayer.Character.HumanoidRootPart
+                local distance = (humanoidRootPart.Position - otherPlayerRootPart.Position).Magnitude
+                if distance < minDistance then
+                    closestPlayer = otherPlayerRootPart
+                    minDistance = distance
                 end
             end
-            if closestPlayer then
-                humanoidRootPart.CFrame = CFrame.new(closestPlayer.Position + Vector3.new(0, 5, 0))
-            end
+        end
+        if closestPlayer then
+            humanoidRootPart.CFrame = CFrame.new(closestPlayer.Position + Vector3.new(0, 5, 0))
         end
     end
 end
@@ -120,7 +119,7 @@ tpAuraButton.MouseButton1Click:Connect(function()
     tpAura()
 end)
 
--- Functionality for Wall Hack
+-- Wall Hack Funktion
 local function wallHack()
     for _, part in pairs(workspace:GetChildren()) do
         if part:IsA("BasePart") then
@@ -138,7 +137,7 @@ local function bladeBall()
     local ball = workspace:FindFirstChild("Ball")  -- Stelle sicher, dass der Ball im Spiel vorhanden ist
     if ball then
         local humanoidRootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
-        while true do
+        while isFlying do
             wait(0.1)
             local direction = (ball.Position - humanoidRootPart.Position).unit
             local targetPosition = ball.Position + direction * 5  -- Abstand zum Ball
@@ -152,12 +151,12 @@ bladeBallButton.MouseButton1Click:Connect(function()
     bladeBall()
 end)
 
--- Function to close the menu
+-- Schließen des Menüs
 closeButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Make the menu movable
+-- Menü verschiebbar machen
 local dragging = false
 local dragInput, dragStart, startPos
 menuFrame.InputBegan:Connect(function(input)
