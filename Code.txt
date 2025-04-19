@@ -82,6 +82,7 @@ minimizeButton.Parent = menuFrame
 -- Funktion für das Fliegen
 local function toggleFly()
     isFlying = not isFlying
+    print("Fly toggled: " .. tostring(isFlying))  -- Debug-Ausgabe
     if isFlying then
         humanoidRootPart.Velocity = Vector3.new(0, 50, 0)  -- Spieler nach oben bewegen
     else
@@ -109,6 +110,7 @@ end
 -- Funktion für Wallhack
 local function toggleWallhack()
     wallhackEnabled = not wallhackEnabled
+    print("Wallhack enabled: " .. tostring(wallhackEnabled))  -- Debug-Ausgabe
     if wallhackEnabled then
         -- Erstelle rote Kisten um alle Gegner
         for _, otherPlayer in pairs(game.Players:GetPlayers()) do
@@ -135,6 +137,7 @@ end
 -- Funktion für TP Aura
 local function toggleTPAura()
     tpAuraEnabled = not tpAuraEnabled
+    print("TP Aura enabled: " .. tostring(tpAuraEnabled))  -- Debug-Ausgabe
     while tpAuraEnabled do
         wait(0.1)
         
