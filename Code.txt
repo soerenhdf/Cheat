@@ -1,19 +1,20 @@
--- Roblox Hack Menu with GitHub Key System and Functions
--- Import Services
+-- Roblox Hack Menu with Key System and Functions
+
+-- Services
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
 local RunService = game:GetService("RunService")
-
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
--- Key URL to Validate Key (Raw version)
+-- Key URL
 local keyURL = "https://raw.githubusercontent.com/soerenhdf/Key/refs/heads/main/key.txt"
 local validKey = nil
+local currentKey = ""
 
--- Create Key Input UI
+-- GUI setup for the Key System
 local function createKeyUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "KeySystem"
@@ -33,148 +34,198 @@ local function createKeyUI()
     Title.Size = UDim2.new(1, 0, 0, 30)
     Title.BackgroundTransparency = 1
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.Font = Enum.Font.SourceSansBold
-    Title.TextSize = 22
+    Title.TextScaled = true
     Title.Parent = Frame
 
-    local TextBox = Instance.new("TextBox")
-    TextBox.PlaceholderText = "Enter your key here"
-    TextBox.Size = UDim2.new(0.8, 0, 0, 40)
-    TextBox.Position = UDim2.new(0.1, 0, 0.3, 0)
-    TextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TextBox.ClearTextOnFocus = false
-    TextBox.Font = Enum.Font.SourceSans
-    TextBox.TextSize = 18
-    TextBox.Parent = Frame
+    local KeyBox = Instance.new("TextBox")
+    KeyBox.Size = UDim2.new(1, 0, 0, 30)
+    KeyBox.Position = UDim2.new(0, 0, 0.2, 0)
+    KeyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KeyBox.PlaceholderText = "Enter Key"
+    KeyBox.TextScaled = true
+    KeyBox.ClearTextOnFocus = true
+    KeyBox.Parent = Frame
 
-    local Submit = Instance.new("TextButton")
-    Submit.Text = "Submit"
-    Submit.Size = UDim2.new(0.4, 0, 0, 40)
-    Submit.Position = UDim2.new(0.3, 0, 0.55, 0)
-    Submit.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-    Submit.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Submit.Font = Enum.Font.SourceSansBold
-    Submit.TextSize = 20
-    Submit.Parent = Frame
+    local SubmitButton = Instance.new("TextButton")
+    SubmitButton.Size = UDim2.new(1, 0, 0, 40)
+    SubmitButton.Position = UDim2.new(0, 0, 0.6, 0)
+    SubmitButton.Text = "Submit"
+    SubmitButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+    SubmitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SubmitButton.TextScaled = true
+    SubmitButton.Parent = Frame
 
+    -- Open link button
     local LinkButton = Instance.new("TextButton")
-    LinkButton.Text = "This is the key"
-    LinkButton.Size = UDim2.new(1, -20, 0, 30)
-    LinkButton.Position = UDim2.new(0, 10, 0.8, 0)
-    LinkButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    LinkButton.TextColor3 = Color3.fromRGB(0, 170, 255)
-    LinkButton.Font = Enum.Font.SourceSansBold
-    LinkButton.TextSize = 18
+    LinkButton.Size = UDim2.new(1, 0, 0, 30)
+    LinkButton.Position = UDim2.new(0, 0, 0.8, 0)
+    LinkButton.Text = "This is the Key"
+    LinkButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+    LinkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    LinkButton.TextScaled = true
     LinkButton.Parent = Frame
 
-    -- Open URL for key information
+    -- Open URL when clicked
     LinkButton.MouseButton1Click:Connect(function()
-        -- Use the following method to open the URL in the browser
-        game:GetService("GuiService"):OpenBrowserWindow("https://link-target.net/1339083/key")
+        setclipboard("https://link-target.net/1339083/key")
+        print("Link copied to clipboard. Open your browser to get the key.")
     end)
 
-    -- Key submission and validation
-    Submit.MouseButton1Click:Connect(function()
-        local inputKey = TextBox.Text
-        if inputKey and inputKey ~= "" then
-            pcall(function()
-                local response = HttpService:GetAsync(keyURL)
-                if inputKey == response then
-                    validKey = inputKey
-                    ScreenGui:Destroy()
-                    createHackMenu()
-                else
-                    TextBox.Text = "Invalid key!"
-                end
-            end)
+    -- Check key when submitted
+    SubmitButton.MouseButton1Click:Connect(function()
+        currentKey = KeyBox.Text
+        if currentKey == validKey then
+            print("Valid Key entered!")
+            -- Close the key entry GUI
+            ScreenGui:Destroy()
+            createHackMenu()  -- Create Hack Menu after valid key
+        else
+            print("Invalid Key! Try again.")
         end
     end)
 end
 
--- Create Hack Menu UI
+-- Function to fetch the valid key from GitHub
+local function fetchValidKey()
+    local response = HttpService:GetAsync(keyURL)
+    validKey = response
+end
+
+-- Hack Menu setup
 local function createHackMenu()
-    local menuGui = Instance.new("ScreenGui")
-    menuGui.Name = "HackMenu"
-    menuGui.ResetOnSpawn = false
-    menuGui.Parent = game.CoreGui
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "HackMenu"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = game.CoreGui
 
-    local menuFrame = Instance.new("Frame")
-    menuFrame.Size = UDim2.new(0, 300, 0, 400)
-    menuFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
-    menuFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    menuFrame.BorderSizePixel = 0
-    menuFrame.Name = "MenuFrame"
-    menuFrame.Parent = menuGui
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 400, 0, 400)
+    Frame.Position = UDim2.new(0.5, -200, 0.5, -200)
+    Frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Frame.BorderSizePixel = 0
+    Frame.Parent = ScreenGui
 
-    local title = Instance.new("TextLabel")
-    title.Text = "Hack Menu"
-    title.Size = UDim2.new(1, 0, 0, 30)
-    title.BackgroundTransparency = 1
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.Font = Enum.Font.SourceSansBold
-    title.TextSize = 22
-    title.Parent = menuFrame
+    -- Title of Hack Menu
+    local Title = Instance.new("TextLabel")
+    Title.Text = "Hack Menu"
+    Title.Size = UDim2.new(1, 0, 0, 50)
+    Title.BackgroundTransparency = 1
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextScaled = true
+    Title.Parent = Frame
 
-    -- Fly Button
-    local flyButton = Instance.new("TextButton")
-    flyButton.Text = "Fly"
-    flyButton.Size = UDim2.new(0.8, 0, 0, 40)
-    flyButton.Position = UDim2.new(0.1, 0, 0.15, 0)
-    flyButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-    flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    flyButton.Font = Enum.Font.SourceSansBold
-    flyButton.TextSize = 20
-    flyButton.Parent = menuFrame
+    -- Button for Fly
+    local FlyButton = Instance.new("TextButton")
+    FlyButton.Size = UDim2.new(1, 0, 0, 40)
+    FlyButton.Position = UDim2.new(0, 0, 0.2, 0)
+    FlyButton.Text = "Toggle Fly"
+    FlyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+    FlyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    FlyButton.TextScaled = true
+    FlyButton.Parent = Frame
 
-    -- TP Aura Button
-    local tpAuraButton = Instance.new("TextButton")
-    tpAuraButton.Text = "TP Aura"
-    tpAuraButton.Size = UDim2.new(0.8, 0, 0, 40)
-    tpAuraButton.Position = UDim2.new(0.1, 0, 0.25, 0)
-    tpAuraButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-    tpAuraButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tpAuraButton.Font = Enum.Font.SourceSansBold
-    tpAuraButton.TextSize = 20
-    tpAuraButton.Parent = menuFrame
+    -- Toggle Fly function
+    local flyActive = false
+    FlyButton.MouseButton1Click:Connect(function()
+        flyActive = not flyActive
+        if flyActive then
+            print("Fly activated!")
+            -- Enable flying behavior here
+            -- [Fly code here]
+        else
+            print("Fly deactivated!")
+            -- Disable flying behavior here
+            -- [Disable Fly code here]
+        end
+    end)
 
-    -- Wallhack Button
-    local wallhackButton = Instance.new("TextButton")
-    wallhackButton.Text = "Wallhack"
-    wallhackButton.Size = UDim2.new(0.8, 0, 0, 40)
-    wallhackButton.Position = UDim2.new(0.1, 0, 0.35, 0)
-    wallhackButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-    wallhackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    wallhackButton.Font = Enum.Font.SourceSansBold
-    wallhackButton.TextSize = 20
-    wallhackButton.Parent = menuFrame
+    -- Button for TP Aura
+    local TPAuraButton = Instance.new("TextButton")
+    TPAuraButton.Size = UDim2.new(1, 0, 0, 40)
+    TPAuraButton.Position = UDim2.new(0, 0, 0.3, 0)
+    TPAuraButton.Text = "Toggle TP Aura"
+    TPAuraButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+    TPAuraButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TPAuraButton.TextScaled = true
+    TPAuraButton.Parent = Frame
 
-    -- Blade Ball Button
-    local bladeBallButton = Instance.new("TextButton")
-    bladeBallButton.Text = "Blade Ball"
-    bladeBallButton.Size = UDim2.new(0.8, 0, 0, 40)
-    bladeBallButton.Position = UDim2.new(0.1, 0, 0.45, 0)
-    bladeBallButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-    bladeBallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    bladeBallButton.Font = Enum.Font.SourceSansBold
-    bladeBallButton.TextSize = 20
-    bladeBallButton.Parent = menuFrame
+    -- Toggle TP Aura function
+    local tpAuraActive = false
+    TPAuraButton.MouseButton1Click:Connect(function()
+        tpAuraActive = not tpAuraActive
+        if tpAuraActive then
+            print("TP Aura activated!")
+            -- Enable TP Aura code here
+        else
+            print("TP Aura deactivated!")
+            -- Disable TP Aura code here
+        end
+    end)
 
-    -- Close Button
-    local closeButton = Instance.new("TextButton")
-    closeButton.Text = "Close"
-    closeButton.Size = UDim2.new(0.8, 0, 0, 40)
-    closeButton.Position = UDim2.new(0.1, 0, 0.75, 0)
-    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeButton.Font = Enum.Font.SourceSansBold
-    closeButton.TextSize = 20
-    closeButton.Parent = menuFrame
+    -- Button for Wall Hack
+    local WallHackButton = Instance.new("TextButton")
+    WallHackButton.Size = UDim2.new(1, 0, 0, 40)
+    WallHackButton.Position = UDim2.new(0, 0, 0.4, 0)
+    WallHackButton.Text = "Toggle Wall Hack"
+    WallHackButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+    WallHackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    WallHackButton.TextScaled = true
+    WallHackButton.Parent = Frame
 
-    closeButton.MouseButton1Click:Connect(function()
-        menuGui:Destroy()
+    -- Toggle Wall Hack function
+    local wallHackActive = false
+    WallHackButton.MouseButton1Click:Connect(function()
+        wallHackActive = not wallHackActive
+        if wallHackActive then
+            print("Wall Hack activated!")
+            -- Enable Wall Hack code here
+            -- [Enable Wall Hack code here]
+        else
+            print("Wall Hack deactivated!")
+            -- Disable Wall Hack code here
+            -- [Disable Wall Hack code here]
+        end
+    end)
+
+    -- Button for Blade Ball
+    local BladeBallButton = Instance.new("TextButton")
+    BladeBallButton.Size = UDim2.new(1, 0, 0, 40)
+    BladeBallButton.Position = UDim2.new(0, 0, 0.5, 0)
+    BladeBallButton.Text = "Toggle Blade Ball"
+    BladeBallButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+    BladeBallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BladeBallButton.TextScaled = true
+    BladeBallButton.Parent = Frame
+
+    -- Toggle Blade Ball function
+    local bladeBallActive = false
+    BladeBallButton.MouseButton1Click:Connect(function()
+        bladeBallActive = not bladeBallActive
+        if bladeBallActive then
+            print("Blade Ball activated!")
+            -- Enable Blade Ball code here
+        else
+            print("Blade Ball deactivated!")
+            -- Disable Blade Ball code here
+        end
+    end)
+
+    -- Button to Close the Menu
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Size = UDim2.new(1, 0, 0, 40)
+    CloseButton.Position = UDim2.new(0, 0, 0.6, 0)
+    CloseButton.Text = "Close Menu"
+    CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseButton.TextScaled = true
+    CloseButton.Parent = Frame
+
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()  -- Close the menu
     end)
 end
 
--- Start the Key UI when the game starts
+-- Fetch the key and display the key UI
+fetchValidKey()
 createKeyUI()
