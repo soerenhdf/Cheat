@@ -1,203 +1,182 @@
--- Roblox-Player
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
--- GUI erstellen
+-- Initial Setup
 local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
+-- Frame for the menu
 local menuFrame = Instance.new("Frame")
-menuFrame.Size = UDim2.new(0, 300, 0, 300)
+menuFrame.Size = UDim2.new(0, 300, 0, 500)
 menuFrame.Position = UDim2.new(0, 50, 0, 50)
 menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 menuFrame.BackgroundTransparency = 0.5
 menuFrame.Parent = screenGui
 
--- Tab Leiste oben
-local tabFrame = Instance.new("Frame")
-tabFrame.Size = UDim2.new(1, 0, 0, 30)
-tabFrame.Position = UDim2.new(0, 0, 0, 0)
-tabFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-tabFrame.BackgroundTransparency = 0.3
-tabFrame.Parent = menuFrame
+-- Menu title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.Text = "Crash Stars Hack Menu"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 24
+titleLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+titleLabel.BackgroundTransparency = 0.5
+titleLabel.Parent = menuFrame
 
-local normalTab = Instance.new("TextButton")
-normalTab.Size = UDim2.new(0, 150, 1, 0)
-normalTab.Position = UDim2.new(0, 0, 0, 0)
-normalTab.Text = "Normal"
-normalTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-normalTab.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-normalTab.Parent = tabFrame
-
-local bladeBallTab = Instance.new("TextButton")
-bladeBallTab.Size = UDim2.new(0, 150, 1, 0)
-bladeBallTab.Position = UDim2.new(0, 150, 0, 0)
-bladeBallTab.Text = "Blade Ball"
-bladeBallTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-bladeBallTab.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-bladeBallTab.Parent = tabFrame
-
--- Die Option-Buttons
+-- Buttons for different cheats
 local flyButton = Instance.new("TextButton")
-flyButton.Size = UDim2.new(0, 250, 0, 50)
-flyButton.Position = UDim2.new(0, 25, 0, 50)
+flyButton.Size = UDim2.new(1, 0, 0, 40)
+flyButton.Position = UDim2.new(0, 0, 0, 40)
 flyButton.Text = "Fly"
 flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-flyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+flyButton.TextSize = 20
+flyButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+flyButton.BackgroundTransparency = 0.5
 flyButton.Parent = menuFrame
 
 local tpAuraButton = Instance.new("TextButton")
-tpAuraButton.Size = UDim2.new(0, 250, 0, 50)
-tpAuraButton.Position = UDim2.new(0, 25, 0, 105)
+tpAuraButton.Size = UDim2.new(1, 0, 0, 40)
+tpAuraButton.Position = UDim2.new(0, 0, 0, 80)
 tpAuraButton.Text = "TP Aura"
 tpAuraButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-tpAuraButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+tpAuraButton.TextSize = 20
+tpAuraButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+tpAuraButton.BackgroundTransparency = 0.5
 tpAuraButton.Parent = menuFrame
 
 local wallHackButton = Instance.new("TextButton")
-wallHackButton.Size = UDim2.new(0, 250, 0, 50)
-wallHackButton.Position = UDim2.new(0, 25, 0, 160)
-wallHackButton.Text = "WallHack"
+wallHackButton.Size = UDim2.new(1, 0, 0, 40)
+wallHackButton.Position = UDim2.new(0, 0, 0, 120)
+wallHackButton.Text = "Wall Hack"
 wallHackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-wallHackButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+wallHackButton.TextSize = 20
+wallHackButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+wallHackButton.BackgroundTransparency = 0.5
 wallHackButton.Parent = menuFrame
 
 local bladeBallButton = Instance.new("TextButton")
-bladeBallButton.Size = UDim2.new(0, 250, 0, 50)
-bladeBallButton.Position = UDim2.new(0, 25, 0, 215)
-bladeBallButton.Text = "Blade Ball Hack"
+bladeBallButton.Size = UDim2.new(1, 0, 0, 40)
+bladeBallButton.Position = UDim2.new(0, 0, 0, 160)
+bladeBallButton.Text = "Blade Ball"
 bladeBallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-bladeBallButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+bladeBallButton.TextSize = 20
+bladeBallButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+bladeBallButton.BackgroundTransparency = 0.5
 bladeBallButton.Parent = menuFrame
 
--- Close Button
 local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 100, 0, 50)
-closeButton.Position = UDim2.new(0, 100, 0, 270)
-closeButton.Text = "Close"
+closeButton.Size = UDim2.new(0, 40, 0, 40)
+closeButton.Position = UDim2.new(1, -40, 0, 0)
+closeButton.Text = "X"
 closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextSize = 20
 closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.BackgroundTransparency = 0.5
 closeButton.Parent = menuFrame
 
--- Minimieren Button
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 50, 0, 50)
-minimizeButton.Position = UDim2.new(0, 250, 0, 0)
-minimizeButton.Text = "-"
-minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-minimizeButton.Parent = menuFrame
-
--- Fly-Funktion
+-- Functionality for Fly
 local isFlying = false
-local function toggleFly()
+local bodyVelocity = nil
+flyButton.MouseButton1Click:Connect(function()
     isFlying = not isFlying
     if isFlying then
-        humanoidRootPart.Anchored = true  -- Flug aktivieren
-        humanoidRootPart.CFrame = humanoidRootPart.CFrame + Vector3.new(0, 50, 0)  -- Spieler nach oben bewegen
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+        bodyVelocity.Velocity = Vector3.new(0, 50, 0)
+        bodyVelocity.Parent = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
     else
-        humanoidRootPart.Anchored = false  -- Flug deaktivieren
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
+        end
     end
-end
+end)
 
--- TP Aura Funktion (mit Abstand und zufälliger Bewegung)
-local tpAuraEnabled = false
-local function toggleTPAura()
-    tpAuraEnabled = not tpAuraEnabled
-    while tpAuraEnabled do
-        wait(0.5)
-        -- Teleportiere zu einem zufälligen Spieler mit mehr Abstand
-        local nearestPlayer = nil
-        local shortestDistance = math.huge
-        for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= player then
-                local distance = (character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).magnitude
-                if distance < shortestDistance then
-                    shortestDistance = distance
-                    nearestPlayer = otherPlayer
+-- Functionality for TP Aura
+local function tpAura()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    while true do
+        wait(0.1)
+        if not isFlying then
+            local closestPlayer = nil
+            local minDistance = 100000
+            for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local otherPlayerRootPart = otherPlayer.Character.HumanoidRootPart
+                    local distance = (humanoidRootPart.Position - otherPlayerRootPart.Position).Magnitude
+                    if distance < minDistance then
+                        closestPlayer = otherPlayerRootPart
+                        minDistance = distance
+                    end
                 end
             end
-        end
-        if nearestPlayer then
-            -- Teleportiere zu einer zufälligen Position um den Spieler herum
-            local randomOffset = Vector3.new(math.random(-25, 25), 0, math.random(-25, 25))
-            humanoidRootPart.CFrame = nearestPlayer.Character.HumanoidRootPart.CFrame + randomOffset
+            if closestPlayer then
+                humanoidRootPart.CFrame = CFrame.new(closestPlayer.Position + Vector3.new(0, 5, 0))
+            end
         end
     end
 end
+tpAuraButton.MouseButton1Click:Connect(function()
+    tpAura()
+end)
 
--- Wallhack Funktion
-local function toggleWallhack()
-    for _, obj in ipairs(workspace:GetChildren()) do
-        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") then
-            local box = Instance.new("BoxHandleAdornment")
-            box.Adornee = obj:FindFirstChild("Head") or obj:FindFirstChild("HumanoidRootPart")
-            box.Size = Vector3.new(3, 6, 3)
-            box.Color3 = Color3.fromRGB(255, 0, 0)  -- Roter Kasten
-            box.Parent = obj
+-- Functionality for Wall Hack
+local function wallHack()
+    for _, part in pairs(workspace:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.Material = Enum.Material.SmoothPlastic
+            part.Transparency = 0.5
         end
     end
 end
+wallHackButton.MouseButton1Click:Connect(function()
+    wallHack()
+end)
 
--- Blade Ball Funktion
+-- Blade Ball Hack
 local function bladeBall()
-    -- Hier wird der Ball immer abgewehrt und der Charakter bewegt sich mit hoher Geschwindigkeit um den Ball herum
-    while true do
-        local ball = workspace:FindFirstChild("Ball")  -- Angenommene Ball-Referenz, anpassen je nach Spiel
-        if ball then
-            -- Bewege den Charakter um den Ball
+    local ball = workspace:FindFirstChild("Ball")  -- Stelle sicher, dass der Ball im Spiel vorhanden ist
+    if ball then
+        local humanoidRootPart = game.Players.LocalPlayer.Character.HumanoidRootPart
+        while true do
+            wait(0.1)
             local direction = (ball.Position - humanoidRootPart.Position).unit
             local targetPosition = ball.Position + direction * 5  -- Abstand zum Ball
             humanoidRootPart.CFrame = CFrame.new(targetPosition)
-            wait(0.1)
+            humanoidRootPart.Velocity = direction * 100  -- Sehr schnelle Bewegung
+            humanoidRootPart.CFrame = CFrame.lookAt(humanoidRootPart.Position, ball.Position)
         end
     end
 end
-
--- Close Button Funktion
-closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()  -- Menü schließen
-end)
-
--- Fly Button Funktion
-flyButton.MouseButton1Click:Connect(function()
-    toggleFly()  -- Fly-Funktion aufrufen
-end)
-
--- TP Aura Button Funktion
-tpAuraButton.MouseButton1Click:Connect(function()
-    toggleTPAura()  -- TP Aura-Funktion aufrufen
-end)
-
--- WallHack Button Funktion
-wallHackButton.MouseButton1Click:Connect(function()
-    toggleWallhack()  -- Wallhack-Funktion aufrufen
-end)
-
--- Blade Ball Button Funktion
 bladeBallButton.MouseButton1Click:Connect(function()
-    bladeBall()  -- Blade Ball Funktion aufrufen
+    bladeBall()
 end)
 
--- Minimieren des Menüs
-local minimized = false
-minimizeButton.MouseButton1Click:Connect(function()
-    if minimized then
-        menuFrame.Size = UDim2.new(0, 300, 0, 300)
-        minimized = false
-        minimizeButton.Text = "-"
-        flyButton.Visible = true
-        tpAuraButton.Visible = true
-        wallHackButton.Visible = true
-        bladeBallButton.Visible = true
-    else
-        menuFrame.Size = UDim2.new(0, 300, 0, 50)
-        minimized = true
-        minimizeButton.Text = "+"
-        flyButton.Visible = false
-        tpAuraButton.Visible = false
-        wallHackButton.Visible = false
-        bladeBallButton.Visible = false
+-- Function to close the menu
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Make the menu movable
+local dragging = false
+local dragInput, dragStart, startPos
+menuFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = menuFrame.Position
+    end
+end)
+
+menuFrame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        menuFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+menuFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
     end
 end)
