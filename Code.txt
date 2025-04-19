@@ -1,217 +1,145 @@
--- Roblox Hack Menu with Key System and Functions
+--# Ultimate Automatic Vlad Ball Hack für Arceus X
+--# Menü Version ohne Key-System
 
--- Services
-local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
-local StarterGui = game:GetService("StarterGui")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
-local mouse = player:GetMouse()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local Ball = nil
 
--- Key URL
-local keyURL = "https://raw.githubusercontent.com/soerenhdf/Key/refs/heads/main/key.txt"
-local validKey = nil
-local currentKey = ""
+-- GUI für das Menü erstellen
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = LocalPlayer.PlayerGui
 
--- GUI setup for the Key System
-local function createKeyUI()
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "KeySystem"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = game.CoreGui
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundTransparency = 0.5
+mainFrame.Parent = screenGui
 
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0, 300, 0, 200)
-    Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
-    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    Frame.BorderSizePixel = 0
-    Frame.Name = "KeyFrame"
-    Frame.Parent = ScreenGui
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 50)
+title.BackgroundTransparency = 1
+title.Text = "Vlad Ball Hacks"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 24
+title.Font = Enum.Font.SourceSans
+title.TextAlignment = Enum.TextAlignment.Center
+title.Parent = mainFrame
 
-    local Title = Instance.new("TextLabel")
-    Title.Text = "Enter Key to Access Menu"
-    Title.Size = UDim2.new(1, 0, 0, 30)
-    Title.BackgroundTransparency = 1
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextScaled = true
-    Title.Parent = Frame
-
-    local KeyBox = Instance.new("TextBox")
-    KeyBox.Size = UDim2.new(1, 0, 0, 30)
-    KeyBox.Position = UDim2.new(0, 0, 0.2, 0)
-    KeyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    KeyBox.PlaceholderText = "Enter Key"
-    KeyBox.TextScaled = true
-    KeyBox.ClearTextOnFocus = true
-    KeyBox.Parent = Frame
-
-    local SubmitButton = Instance.new("TextButton")
-    SubmitButton.Size = UDim2.new(1, 0, 0, 40)
-    SubmitButton.Position = UDim2.new(0, 0, 0.6, 0)
-    SubmitButton.Text = "Submit"
-    SubmitButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
-    SubmitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SubmitButton.TextScaled = true
-    SubmitButton.Parent = Frame
-
-    -- Open link button
-    local LinkButton = Instance.new("TextButton")
-    LinkButton.Size = UDim2.new(1, 0, 0, 30)
-    LinkButton.Position = UDim2.new(0, 0, 0.8, 0)
-    LinkButton.Text = "This is the Key"
-    LinkButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-    LinkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    LinkButton.TextScaled = true
-    LinkButton.Parent = Frame
-
-    -- Open URL when clicked
-    LinkButton.MouseButton1Click:Connect(function()
-        setclipboard("https://link-target.net/1339083/key")
-        print("Link copied to clipboard. Open your browser to get the key.")
-    end)
-
-    -- Check key when submitted
-    SubmitButton.MouseButton1Click:Connect(function()
-        currentKey = KeyBox.Text
-        if currentKey == validKey then
-            print("Valid Key entered!")
-            -- Close the key entry GUI
-            ScreenGui:Destroy()
-            createHackMenu()  -- Create Hack Menu after valid key
-        else
-            print("Invalid Key! Try again.")
-        end
-    end)
+-- Schaltflächen für die Hacks
+local function createButton(text, position, func)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0, 50)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 18
+    button.Font = Enum.Font.SourceSans
+    button.TextButtonMode = Enum.TextButtonMode.Scriptable
+    button.Parent = mainFrame
+    button.MouseButton1Click:Connect(func)
+    return button
 end
 
--- Function to fetch the valid key from GitHub
-local function fetchValidKey()
-    local response = HttpService:GetAsync(keyURL)
-    validKey = response
+-- Funktionen für die Hacks
+function findBall()
+    for _, v in ipairs(workspace:GetChildren()) do
+        if v:IsA("Part") and v.Name == "VladBall" then
+            return v
+        end
+    end
+    return nil
 end
 
--- Hack Menu setup
-local function createHackMenu()
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "HackMenu"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = game.CoreGui
-
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0, 400, 0, 400)
-    Frame.Position = UDim2.new(0.5, -200, 0.5, -200)
-    Frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Frame.BorderSizePixel = 0
-    Frame.Parent = ScreenGui
-
-    -- Title of Hack Menu
-    local Title = Instance.new("TextLabel")
-    Title.Text = "Hack Menu"
-    Title.Size = UDim2.new(1, 0, 0, 50)
-    Title.BackgroundTransparency = 1
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextScaled = true
-    Title.Parent = Frame
-
-    -- Button for Fly
-    local FlyButton = Instance.new("TextButton")
-    FlyButton.Size = UDim2.new(1, 0, 0, 40)
-    FlyButton.Position = UDim2.new(0, 0, 0.2, 0)
-    FlyButton.Text = "Toggle Fly"
-    FlyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
-    FlyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    FlyButton.TextScaled = true
-    FlyButton.Parent = Frame
-
-    -- Toggle Fly function
-    local flyActive = false
-    FlyButton.MouseButton1Click:Connect(function()
-        flyActive = not flyActive
-        if flyActive then
-            print("Fly activated!")
-            -- Enable flying behavior here
-            -- [Fly code here]
-        else
-            print("Fly deactivated!")
-            -- Disable flying behavior here
-            -- [Disable Fly code here]
-        end
-    end)
-
-    -- Button for TP Aura
-    local TPAuraButton = Instance.new("TextButton")
-    TPAuraButton.Size = UDim2.new(1, 0, 0, 40)
-    TPAuraButton.Position = UDim2.new(0, 0, 0.3, 0)
-    TPAuraButton.Text = "Toggle TP Aura"
-    TPAuraButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
-    TPAuraButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TPAuraButton.TextScaled = true
-    TPAuraButton.Parent = Frame
-
-    -- Toggle TP Aura function
-    local tpAuraActive = false
-    TPAuraButton.MouseButton1Click:Connect(function()
-        tpAuraActive = not tpAuraActive
-        if tpAuraActive then
-            print("TP Aura activated!")
-            -- Enable TP Aura code here
-        else
-            print("TP Aura deactivated!")
-            -- Disable TP Aura code here
-        end
-    end)
-
-    -- Button for Wall Hack
-    local WallHackButton = Instance.new("TextButton")
-    WallHackButton.Size = UDim2.new(1, 0, 0, 40)
-    WallHackButton.Position = UDim2.new(0, 0, 0.4, 0)
-    WallHackButton.Text = "Toggle Wall Hack"
-    WallHackButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
-    WallHackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    WallHackButton.TextScaled = true
-    WallHackButton.Parent = Frame
-
-    -- Toggle Wall Hack function
-    local wallHackActive = false
-    WallHackButton.MouseButton1Click:Connect(function()
-        wallHackActive = not wallHackActive
-        if wallHackActive then
-            print("Wall Hack activated!")
-            -- Enable Wall Hack code here
-            -- [Enable Wall Hack code here]
-        else
-            print("Wall Hack deactivated!")
-            -- Disable Wall Hack code here
-            -- [Disable Wall Hack code here]
-        end
-    end)
-
-    -- Button for Blade Ball
-    local BladeBallButton = Instance.new("TextButton")
-    BladeBallButton.Size = UDim2.new(1, 0, 0, 40)
-    BladeBallButton.Position = UDim2.new(0, 0, 0.5, 0)
-    BladeBallButton.Text = "Toggle Blade Ball"
-    BladeBallButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
-    BladeBallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    BladeBallButton.TextScaled = true
-    BladeBallButton.Parent = Frame
-
-    -- Toggle Blade Ball function
-    local bladeBallActive = false
-    BladeBallButton.MouseButton1Click:Connect(function()
-        bladeBallActive = not bladeBallActive
-        if bladeBallActive then
-            print("Blade Ball activated!")
-            -- Enable Blade Ball code here
-        else
-            print("Blade Ball deactivated!")
-            -- Disable Blade Ball code here
-        end
-    end)
+function autoCatchBall()
+    Ball = findBall()
+    if Ball then
+        -- Teleportiere zu Ball, fange ihn
+        local ballPos = Ball.Position
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(ballPos)
+        print("Ball automatisch gefangen!")
+    end
 end
 
--- Fetch the key and create the UI
-fetchValidKey()
-createKeyUI()
+function instantScore()
+    if Ball then
+        -- Setzt den Ball zur Zielposition
+        Ball.CFrame = CFrame.new(Vector3.new(1000, 1000, 1000))
+        -- Score +10 hacken
+        local score = LocalPlayer.leaderstats.Score
+        score.Value = score.Value + 10
+        print("Sieg sofort erzielt!")
+    end
+end
+
+function superSpeed()
+    game:GetService("TweenService"):Create(LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Position = Mouse.Hit.p}):Play()
+    print("Super-Speed automatisch aktiviert!")
+end
+
+function ballAimbot()
+    if Ball then
+        local target = workspace:FindFirstChild("Enemy") -- Setzt hier die Logik für Gegner
+        if target then
+            Ball.CFrame = CFrame.new(target.Position) -- Ball wird immer zu Gegnern gelenkt
+            print("Aimbot aktiviert!")
+        end
+    end
+end
+
+function noCooldown()
+    -- Setzt den Ball-Wurf so, dass keine Abklingzeit existiert
+    Ball.Velocity = Vector3.new(1000, 1000, 1000)
+    print("Kein Cooldown Modus aktiviert!")
+end
+
+function infiniteJump()
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+    bodyVelocity.Velocity = Vector3.new(0, 100, 0)
+    bodyVelocity.Parent = LocalPlayer.Character.HumanoidRootPart
+    print("Unendlich Sprünge aktiviert!")
+end
+
+function instantRespawn()
+    wait(0.1)
+    LocalPlayer.Character:BreakJoints()
+    wait(0.1)
+    LocalPlayer.Character:LoadCharacter()
+    print("Sofortiges Respawn nach Wurf aktiviert!")
+end
+
+function enemyBlocker()
+    for _, v in ipairs(workspace:GetChildren()) do
+        if v:IsA("Part") and v.Name == "VladBall" and v.Parent.Name ~= LocalPlayer.Name then
+            v.CFrame = CFrame.new(Vector3.new(9999, 9999, 9999)) -- Blockiere Gegner
+            print("Gegner Blocker aktiviert!")
+        end
+    end
+end
+
+function teleportAura()
+    for _, v in ipairs(workspace:GetChildren()) do
+        if v:IsA("Part") and v.Name == "VladBall" then
+            local distance = 10 -- Abstand zum Ball (kann angepasst werden)
+            local ballPos = v.Position
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(ballPos + Vector3.new(distance, 0, distance))
+            print("Teleport-Aura aktiviert! Fliege um den Ball!")
+            break
+        end
+    end
+end
+
+-- Menü-Buttons
+createButton("Auto-Catch Ball", UDim2.new(0, 0, 0.1, 0), autoCatchBall)
+createButton("Instant Score", UDim2.new(0, 0, 0.2, 0), instantScore)
+createButton("Super-Speed", UDim2.new(0, 0, 0.3, 0), superSpeed)
+createButton("Ball-Aimbot", UDim2.new(0, 0, 0.4, 0), ballAimbot)
+createButton("No Cooldown", UDim2.new(0, 0, 0.5, 0), noCooldown)
+createButton("Infinite Jump", UDim2.new(0, 0, 0.6, 0), infiniteJump)
+createButton("Instant Respawn", UDim2.new(0, 0, 0.7, 0), instantRespawn)
+createButton("Enemy Blocker", UDim2.new(0, 0, 0.8, 0), enemyBlocker)
+createButton("Teleport Aura", UDim2.new(0, 0, 0.9, 0), teleportAura)
