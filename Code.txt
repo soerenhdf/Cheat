@@ -14,10 +14,34 @@ menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 menuFrame.BackgroundTransparency = 0.5
 menuFrame.Parent = screenGui
 
--- Buttons erstellen
+-- Tab Leiste oben
+local tabFrame = Instance.new("Frame")
+tabFrame.Size = UDim2.new(1, 0, 0, 30)
+tabFrame.Position = UDim2.new(0, 0, 0, 0)
+tabFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+tabFrame.BackgroundTransparency = 0.3
+tabFrame.Parent = menuFrame
+
+local normalTab = Instance.new("TextButton")
+normalTab.Size = UDim2.new(0, 150, 1, 0)
+normalTab.Position = UDim2.new(0, 0, 0, 0)
+normalTab.Text = "Normal"
+normalTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+normalTab.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+normalTab.Parent = tabFrame
+
+local bladeBallTab = Instance.new("TextButton")
+bladeBallTab.Size = UDim2.new(0, 150, 1, 0)
+bladeBallTab.Position = UDim2.new(0, 150, 0, 0)
+bladeBallTab.Text = "Blade Ball"
+bladeBallTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+bladeBallTab.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+bladeBallTab.Parent = tabFrame
+
+-- Die Option-Buttons
 local flyButton = Instance.new("TextButton")
 flyButton.Size = UDim2.new(0, 250, 0, 50)
-flyButton.Position = UDim2.new(0, 25, 0, 25)
+flyButton.Position = UDim2.new(0, 25, 0, 50)
 flyButton.Text = "Fly"
 flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 flyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
@@ -25,7 +49,7 @@ flyButton.Parent = menuFrame
 
 local tpAuraButton = Instance.new("TextButton")
 tpAuraButton.Size = UDim2.new(0, 250, 0, 50)
-tpAuraButton.Position = UDim2.new(0, 25, 0, 85)
+tpAuraButton.Position = UDim2.new(0, 25, 0, 105)
 tpAuraButton.Text = "TP Aura"
 tpAuraButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 tpAuraButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
@@ -33,7 +57,7 @@ tpAuraButton.Parent = menuFrame
 
 local wallHackButton = Instance.new("TextButton")
 wallHackButton.Size = UDim2.new(0, 250, 0, 50)
-wallHackButton.Position = UDim2.new(0, 25, 0, 145)
+wallHackButton.Position = UDim2.new(0, 25, 0, 160)
 wallHackButton.Text = "WallHack"
 wallHackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 wallHackButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
@@ -41,15 +65,16 @@ wallHackButton.Parent = menuFrame
 
 local bladeBallButton = Instance.new("TextButton")
 bladeBallButton.Size = UDim2.new(0, 250, 0, 50)
-bladeBallButton.Position = UDim2.new(0, 25, 0, 205)
-bladeBallButton.Text = "Blade Ball"
+bladeBallButton.Position = UDim2.new(0, 25, 0, 215)
+bladeBallButton.Text = "Blade Ball Hack"
 bladeBallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 bladeBallButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 bladeBallButton.Parent = menuFrame
 
+-- Close Button
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 100, 0, 50)
-closeButton.Position = UDim2.new(0, 100, 0, 255)
+closeButton.Position = UDim2.new(0, 100, 0, 270)
 closeButton.Text = "Close"
 closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
@@ -69,9 +94,10 @@ local isFlying = false
 local function toggleFly()
     isFlying = not isFlying
     if isFlying then
-        humanoidRootPart.Velocity = Vector3.new(0, 50, 0)  -- Spieler nach oben bewegen
+        humanoidRootPart.Anchored = true  -- Flug aktivieren
+        humanoidRootPart.CFrame = humanoidRootPart.CFrame + Vector3.new(0, 50, 0)  -- Spieler nach oben bewegen
     else
-        humanoidRootPart.Velocity = Vector3.new(0, 0, 0)  -- Stoppe das Fliegen
+        humanoidRootPart.Anchored = false  -- Flug deaktivieren
     end
 end
 
@@ -118,7 +144,7 @@ local function bladeBall()
     -- Logik für Blade Ball einfügen
 end
 
--- Schließen Button Funktion
+-- Close Button Funktion
 closeButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()  -- Menü schließen
 end)
@@ -165,6 +191,29 @@ minimizeButton.MouseButton1Click:Connect(function()
         bladeBallButton.Visible = false
         closeButton.Visible = false
     end
+end)
+
+-- Tab-Wechsel
+local function switchTab(tab)
+    if tab == "normal" then
+        flyButton.Visible = true
+        tpAuraButton.Visible = true
+        wallHackButton.Visible = true
+        bladeBallButton.Visible = false
+    elseif tab == "bladeball" then
+        flyButton.Visible = false
+        tpAuraButton.Visible = false
+        wallHackButton.Visible = false
+        bladeBallButton.Visible = true
+    end
+end
+
+normalTab.MouseButton1Click:Connect(function()
+    switchTab("normal")  -- Normal Tab aktivieren
+end)
+
+bladeBallTab.MouseButton1Click:Connect(function()
+    switchTab("bladeball")  -- Blade Ball Tab aktivieren
 end)
 
 -- Menü verschiebbar machen
