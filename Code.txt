@@ -1,23 +1,9 @@
--- Initiale Variablen
+-- Roblox-Player
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-local ball = workspace:WaitForChild("Ball")  -- Der Ball, mit dem der Spieler interagieren soll
-local radius = 125  -- Radius des Kreises um den Ball
-local speed = 0.05  -- Geschwindigkeit der Kreisbewegung
-local movingInCircle = false  -- Wenn der Spieler sich im Kreis bewegt
-local isFlying = false  -- Wenn der Spieler fliegt
 
--- Wallhack Variablen
-local wallhackEnabled = false
-local wallhackColor = Color3.fromRGB(255, 0, 0)  -- Rote Kisten für Gegner
-
--- TP Aura Variablen
-local tpAuraEnabled = false
-local tpDistance = 50  -- Maximaler Abstand zum Teleportieren
-local tpSpeed = 0.2  -- Geschwindigkeit des Teleportierens
-
--- Erstelle das GUI Menü
+-- GUI erstellen
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
@@ -28,7 +14,7 @@ menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 menuFrame.BackgroundTransparency = 0.5
 menuFrame.Parent = screenGui
 
--- Erstelle Buttons
+-- Buttons erstellen
 local flyButton = Instance.new("TextButton")
 flyButton.Size = UDim2.new(0, 250, 0, 50)
 flyButton.Position = UDim2.new(0, 25, 0, 25)
@@ -37,29 +23,29 @@ flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 flyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 flyButton.Parent = menuFrame
 
-local bladeBallButton = Instance.new("TextButton")
-bladeBallButton.Size = UDim2.new(0, 250, 0, 50)
-bladeBallButton.Position = UDim2.new(0, 25, 0, 85)
-bladeBallButton.Text = "Blade Ball"
-bladeBallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-bladeBallButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-bladeBallButton.Parent = menuFrame
-
 local tpAuraButton = Instance.new("TextButton")
 tpAuraButton.Size = UDim2.new(0, 250, 0, 50)
-tpAuraButton.Position = UDim2.new(0, 25, 0, 145)
+tpAuraButton.Position = UDim2.new(0, 25, 0, 85)
 tpAuraButton.Text = "TP Aura"
 tpAuraButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 tpAuraButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 tpAuraButton.Parent = menuFrame
 
-local wallhackButton = Instance.new("TextButton")
-wallhackButton.Size = UDim2.new(0, 250, 0, 50)
-wallhackButton.Position = UDim2.new(0, 25, 0, 205)
-wallhackButton.Text = "Wallhack"
-wallhackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-wallhackButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-wallhackButton.Parent = menuFrame
+local wallHackButton = Instance.new("TextButton")
+wallHackButton.Size = UDim2.new(0, 250, 0, 50)
+wallHackButton.Position = UDim2.new(0, 25, 0, 145)
+wallHackButton.Text = "WallHack"
+wallHackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+wallHackButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+wallHackButton.Parent = menuFrame
+
+local bladeBallButton = Instance.new("TextButton")
+bladeBallButton.Size = UDim2.new(0, 250, 0, 50)
+bladeBallButton.Position = UDim2.new(0, 25, 0, 205)
+bladeBallButton.Text = "Blade Ball"
+bladeBallButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+bladeBallButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+bladeBallButton.Parent = menuFrame
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 100, 0, 50)
@@ -69,8 +55,7 @@ closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 closeButton.Parent = menuFrame
 
--- Menü Minimieren/Maximieren
-local minimized = false
+-- Minimieren Button
 local minimizeButton = Instance.new("TextButton")
 minimizeButton.Size = UDim2.new(0, 50, 0, 50)
 minimizeButton.Position = UDim2.new(0, 250, 0, 0)
@@ -79,7 +64,8 @@ minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 minimizeButton.Parent = menuFrame
 
--- Funktion für das Fliegen
+-- Fly-Funktion
+local isFlying = false
 local function toggleFly()
     isFlying = not isFlying
     print("Fly toggled: " .. tostring(isFlying))  -- Debug-Ausgabe
@@ -90,122 +76,91 @@ local function toggleFly()
     end
 end
 
--- Funktion für Blade Ball
-local function moveInCircle()
-    while movingInCircle do
-        wait(0.1)
-        
-        -- Berechne eine zufällige Position im Kreis um den Ball
-        local ballPos = ball.Position
-        local time = tick()
-        local xOffset = math.cos(time * speed) * radius
-        local zOffset = math.sin(time * speed) * radius
-        
-        local targetPosition = Vector3.new(ballPos.X + xOffset, ballPos.Y, ballPos.Z + zOffset)
-        humanoidRootPart.CFrame = CFrame.new(targetPosition)
-        humanoidRootPart.CFrame = CFrame.new(targetPosition, ball.Position)  -- Schaut immer zum Ball
-    end
-end
-
--- Funktion für Wallhack
-local function toggleWallhack()
-    wallhackEnabled = not wallhackEnabled
-    print("Wallhack enabled: " .. tostring(wallhackEnabled))  -- Debug-Ausgabe
-    if wallhackEnabled then
-        -- Erstelle rote Kisten um alle Gegner
-        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= player then
-                local box = Instance.new("Part")
-                box.Size = Vector3.new(4, 6, 4)
-                box.Position = otherPlayer.Character.HumanoidRootPart.Position
-                box.Anchored = true
-                box.CanCollide = false
-                box.Color = wallhackColor
-                box.Parent = workspace
-            end
-        end
-    else
-        -- Entferne alle Wallhack-Objekte
-        for _, obj in pairs(workspace:GetChildren()) do
-            if obj:IsA("Part") and obj.Color == wallhackColor then
-                obj:Destroy()
-            end
-        end
-    end
-end
-
--- Funktion für TP Aura
+-- TP Aura Funktion
+local tpAuraEnabled = false
 local function toggleTPAura()
     tpAuraEnabled = not tpAuraEnabled
     print("TP Aura enabled: " .. tostring(tpAuraEnabled))  -- Debug-Ausgabe
     while tpAuraEnabled do
         wait(0.1)
-        
-        -- Finde den nächsten Spieler
-        local nearestPlayer = nil
-        local minDistance = tpDistance
-        
-        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= player and otherPlayer.Character then
-                local distance = (humanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).magnitude
-                if distance < minDistance then
-                    nearestPlayer = otherPlayer
-                    minDistance = distance
-                end
-            end
-        end
-        
-        if nearestPlayer then
-            -- Teleportiere dich näher zum nächsten Spieler
-            local targetPosition = nearestPlayer.Character.HumanoidRootPart.Position + Vector3.new(math.random(-10, 10), 0, math.random(-10, 10))
-            humanoidRootPart.CFrame = CFrame.new(targetPosition)
-            humanoidRootPart.CFrame = CFrame.new(targetPosition, nearestPlayer.Character.HumanoidRootPart.Position)  -- Schaut immer zum nächsten Spieler
+        -- Hier könnte die Logik zum Teleportieren eingefügt werden
+    end
+end
+
+-- Wallhack Funktion
+local function toggleWallhack()
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if obj:IsA("Model") and obj:FindFirstChild("Humanoid") then
+            local box = Instance.new("BoxHandleAdornment")
+            box.Adornee = obj:FindFirstChild("Head") or obj:FindFirstChild("HumanoidRootPart")
+            box.Size = Vector3.new(3, 6, 3)
+            box.Color3 = Color3.fromRGB(255, 0, 0)  -- Roter Kasten
+            box.Parent = obj
         end
     end
 end
 
--- Funktion für Minimieren
+-- Blade Ball Funktion
+local function bladeBall()
+    print("Blade Ball aktivieren")  -- Debug-Ausgabe
+    -- Logik für Blade Ball einfügen
+    -- Hier könnten Bewegungs- oder Interaktionslogiken für Blade Ball eingefügt werden
+end
+
+-- Schließen Button Funktion
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()  -- Menü schließen
+    print("Menü geschlossen")  -- Debug-Ausgabe
+end)
+
+-- Fly Button Funktion
+flyButton.MouseButton1Click:Connect(function()
+    print("Fly Button clicked")  -- Debug-Ausgabe
+    toggleFly()  -- Fly-Funktion aufrufen
+end)
+
+-- TP Aura Button Funktion
+tpAuraButton.MouseButton1Click:Connect(function()
+    print("TP Aura Button clicked")  -- Debug-Ausgabe
+    toggleTPAura()  -- TP Aura-Funktion aufrufen
+end)
+
+-- WallHack Button Funktion
+wallHackButton.MouseButton1Click:Connect(function()
+    print("WallHack Button clicked")  -- Debug-Ausgabe
+    toggleWallhack()  -- Wallhack-Funktion aufrufen
+end)
+
+-- Blade Ball Button Funktion
+bladeBallButton.MouseButton1Click:Connect(function()
+    print("Blade Ball Button clicked")  -- Debug-Ausgabe
+    bladeBall()  -- Blade Ball Funktion aufrufen
+end)
+
+-- Minimieren des Menüs
+local minimized = false
 minimizeButton.MouseButton1Click:Connect(function()
     if minimized then
         menuFrame.Size = UDim2.new(0, 300, 0, 300)
         minimized = false
         minimizeButton.Text = "-"
-        -- Alle Buttons sichtbar machen
         flyButton.Visible = true
-        bladeBallButton.Visible = true
         tpAuraButton.Visible = true
-        wallhackButton.Visible = true
+        wallHackButton.Visible = true
+        bladeBallButton.Visible = true
         closeButton.Visible = true
     else
         menuFrame.Size = UDim2.new(0, 50, 0, 50)
         minimized = true
         minimizeButton.Text = "+"
-        -- Buttons ausblenden
         flyButton.Visible = false
-        bladeBallButton.Visible = false
         tpAuraButton.Visible = false
-        wallhackButton.Visible = false
+        wallHackButton.Visible = false
+        bladeBallButton.Visible = false
         closeButton.Visible = false
     end
 end)
 
--- Funktionen für Buttons
-flyButton.MouseButton1Click:Connect(function()
-    toggleFly()
-end)
-
-bladeBallButton.MouseButton1Click:Connect(function()
-    moveInCircle()  -- Starte die Bewegung im Kreis um den Ball
-end)
-
-tpAuraButton.MouseButton1Click:Connect(function()
-    toggleTPAura()
-end)
-
-wallhackButton.MouseButton1Click:Connect(function()
-    toggleWallhack()
-end)
-
-closeButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()  -- Menü schließen
-end)
+-- Sicherstellen, dass das GUI auch angezeigt wird
+screenGui.Enabled = true
+print("GUI wird angezeigt")  -- Debug-Ausgabe
