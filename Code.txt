@@ -179,3 +179,62 @@ menuFrame.InputEnded:Connect(function(input)
         dragging = false
     end
 end)
+
+-- Menü minimieren
+local minimized = false
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 40, 0, 40)
+minimizeButton.Position = UDim2.new(0, 0, 0, 0)
+minimizeButton.Text = "_"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.TextSize = 20
+minimizeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+minimizeButton.BackgroundTransparency = 0.5
+minimizeButton.Parent = menuFrame
+
+minimizeButton.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        menuFrame.Size = UDim2.new(0, 40, 0, 40)  -- Minimiert das Menü
+        flyButton.Visible = false
+        tpAuraButton.Visible = false
+        wallHackButton.Visible = false
+        bladeBallButton.Visible = false
+    else
+        menuFrame.Size = UDim2.new(0, 300, 0, 500)  -- Wiederherstellen des Menüs
+        flyButton.Visible = true
+        tpAuraButton.Visible = true
+        wallHackButton.Visible = true
+        bladeBallButton.Visible = true
+    end
+end)
+
+-- Eingabeaufforderung für den Key
+local inputBox = Instance.new("TextBox")
+inputBox.Size = UDim2.new(0, 200, 0, 30)
+inputBox.Position = UDim2.new(0, 50, 0, 450)
+inputBox.Text = "Enter key"
+inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+inputBox.TextSize = 18
+inputBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+inputBox.BackgroundTransparency = 0.5
+inputBox.Parent = menuFrame
+
+local submitButton = Instance.new("TextButton")
+submitButton.Size = UDim2.new(0, 60, 0, 30)
+submitButton.Position = UDim2.new(0, 50, 0, 480)
+submitButton.Text = "Submit"
+submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitButton.TextSize = 18
+submitButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+submitButton.BackgroundTransparency = 0.5
+submitButton.Parent = menuFrame
+
+submitButton.MouseButton1Click:Connect(function()
+    if inputBox.Text == "#crash-key" then
+        menuFrame.Visible = true
+    else
+        print("Invalid Key")
+    end
+end)
+
