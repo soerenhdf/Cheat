@@ -210,22 +210,8 @@ local function createHackMenu()
             -- Disable Blade Ball code here
         end
     end)
-
-    -- Button to Close the Menu
-    local CloseButton = Instance.new("TextButton")
-    CloseButton.Size = UDim2.new(1, 0, 0, 40)
-    CloseButton.Position = UDim2.new(0, 0, 0.6, 0)
-    CloseButton.Text = "Close Menu"
-    CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CloseButton.TextScaled = true
-    CloseButton.Parent = Frame
-
-    CloseButton.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()  -- Close the menu
-    end)
 end
 
--- Fetch the key and display the key UI
+-- Fetch the key and create the UI
 fetchValidKey()
 createKeyUI()
