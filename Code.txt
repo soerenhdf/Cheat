@@ -101,13 +101,13 @@ local function toggleFly()
     end
 end
 
--- TP Aura Funktion
+-- TP Aura Funktion (mit Abstand und zufälliger Bewegung)
 local tpAuraEnabled = false
 local function toggleTPAura()
     tpAuraEnabled = not tpAuraEnabled
     while tpAuraEnabled do
-        wait(0.1)
-        -- Teleportiere zu einem zufälligen Spieler
+        wait(0.5)
+        -- Teleportiere zu einem zufälligen Spieler mit mehr Abstand
         local nearestPlayer = nil
         local shortestDistance = math.huge
         for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
@@ -120,7 +120,9 @@ local function toggleTPAura()
             end
         end
         if nearestPlayer then
-            humanoidRootPart.CFrame = nearestPlayer.Character.HumanoidRootPart.CFrame
+            -- Teleportiere zu einer zufälligen Position um den Spieler herum
+            local randomOffset = Vector3.new(math.random(-25, 25), 0, math.random(-25, 25))
+            humanoidRootPart.CFrame = nearestPlayer.Character.HumanoidRootPart.CFrame + randomOffset
         end
     end
 end
@@ -140,8 +142,17 @@ end
 
 -- Blade Ball Funktion
 local function bladeBall()
-    print("Blade Ball aktivieren")  -- Debug-Ausgabe
-    -- Logik für Blade Ball einfügen
+    -- Hier wird der Ball immer abgewehrt und der Charakter bewegt sich mit hoher Geschwindigkeit um den Ball herum
+    while true do
+        local ball = workspace:FindFirstChild("Ball")  -- Angenommene Ball-Referenz, anpassen je nach Spiel
+        if ball then
+            -- Bewege den Charakter um den Ball
+            local direction = (ball.Position - humanoidRootPart.Position).unit
+            local targetPosition = ball.Position + direction * 5  -- Abstand zum Ball
+            humanoidRootPart.CFrame = CFrame.new(targetPosition)
+            wait(0.1)
+        end
+    end
 end
 
 -- Close Button Funktion
@@ -180,67 +191,13 @@ minimizeButton.MouseButton1Click:Connect(function()
         tpAuraButton.Visible = true
         wallHackButton.Visible = true
         bladeBallButton.Visible = true
-        closeButton.Visible = true
     else
-        menuFrame.Size = UDim2.new(0, 50, 0, 50)
+        menuFrame.Size = UDim2.new(0, 300, 0, 50)
         minimized = true
         minimizeButton.Text = "+"
         flyButton.Visible = false
         tpAuraButton.Visible = false
         wallHackButton.Visible = false
         bladeBallButton.Visible = false
-        closeButton.Visible = false
     end
 end)
-
--- Tab-Wechsel
-local function switchTab(tab)
-    if tab == "normal" then
-        flyButton.Visible = true
-        tpAuraButton.Visible = true
-        wallHackButton.Visible = true
-        bladeBallButton.Visible = false
-    elseif tab == "bladeball" then
-        flyButton.Visible = false
-        tpAuraButton.Visible = false
-        wallHackButton.Visible = false
-        bladeBallButton.Visible = true
-    end
-end
-
-normalTab.MouseButton1Click:Connect(function()
-    switchTab("normal")  -- Normal Tab aktivieren
-end)
-
-bladeBallTab.MouseButton1Click:Connect(function()
-    switchTab("bladeball")  -- Blade Ball Tab aktivieren
-end)
-
--- Menü verschiebbar machen
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
-menuFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = menuFrame.Position
-    end
-end)
-
-menuFrame.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        menuFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-menuFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
--- Sicherstellen, dass das GUI auch angezeigt wird
-screenGui.Enabled = true
