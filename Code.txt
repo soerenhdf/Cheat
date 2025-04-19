@@ -68,7 +68,6 @@ minimizeButton.Parent = menuFrame
 local isFlying = false
 local function toggleFly()
     isFlying = not isFlying
-    print("Fly toggled: " .. tostring(isFlying))  -- Debug-Ausgabe
     if isFlying then
         humanoidRootPart.Velocity = Vector3.new(0, 50, 0)  -- Spieler nach oben bewegen
     else
@@ -80,10 +79,23 @@ end
 local tpAuraEnabled = false
 local function toggleTPAura()
     tpAuraEnabled = not tpAuraEnabled
-    print("TP Aura enabled: " .. tostring(tpAuraEnabled))  -- Debug-Ausgabe
     while tpAuraEnabled do
         wait(0.1)
-        -- Hier könnte die Logik zum Teleportieren eingefügt werden
+        -- Teleportiere zu einem zufälligen Spieler
+        local nearestPlayer = nil
+        local shortestDistance = math.huge
+        for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+            if otherPlayer ~= player then
+                local distance = (character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    nearestPlayer = otherPlayer
+                end
+            end
+        end
+        if nearestPlayer then
+            humanoidRootPart.CFrame = nearestPlayer.Character.HumanoidRootPart.CFrame
+        end
     end
 end
 
@@ -104,36 +116,30 @@ end
 local function bladeBall()
     print("Blade Ball aktivieren")  -- Debug-Ausgabe
     -- Logik für Blade Ball einfügen
-    -- Hier könnten Bewegungs- oder Interaktionslogiken für Blade Ball eingefügt werden
 end
 
 -- Schließen Button Funktion
 closeButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()  -- Menü schließen
-    print("Menü geschlossen")  -- Debug-Ausgabe
 end)
 
 -- Fly Button Funktion
 flyButton.MouseButton1Click:Connect(function()
-    print("Fly Button clicked")  -- Debug-Ausgabe
     toggleFly()  -- Fly-Funktion aufrufen
 end)
 
 -- TP Aura Button Funktion
 tpAuraButton.MouseButton1Click:Connect(function()
-    print("TP Aura Button clicked")  -- Debug-Ausgabe
     toggleTPAura()  -- TP Aura-Funktion aufrufen
 end)
 
 -- WallHack Button Funktion
 wallHackButton.MouseButton1Click:Connect(function()
-    print("WallHack Button clicked")  -- Debug-Ausgabe
     toggleWallhack()  -- Wallhack-Funktion aufrufen
 end)
 
 -- Blade Ball Button Funktion
 bladeBallButton.MouseButton1Click:Connect(function()
-    print("Blade Ball Button clicked")  -- Debug-Ausgabe
     bladeBall()  -- Blade Ball Funktion aufrufen
 end)
 
@@ -161,6 +167,31 @@ minimizeButton.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Menü verschiebbar machen
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+menuFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = menuFrame.Position
+    end
+end)
+
+menuFrame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        menuFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+menuFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
 -- Sicherstellen, dass das GUI auch angezeigt wird
 screenGui.Enabled = true
-print("GUI wird angezeigt")  -- Debug-Ausgabe
