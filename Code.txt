@@ -1,45 +1,61 @@
--- Vlad Ball Ultimate Hack Menu (Arceus X)
+-- Vlad Ball Toggle Hack Menü für Arceus X
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-
--- Warte auf PlayerGui
 repeat wait() until LocalPlayer:FindFirstChild("PlayerGui")
 
--- GUI erstellen
-local gui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
+-- Menü-Setup
+local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
 gui.ResetOnSpawn = false
+gui.Name = "VladHackMenu"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 300, 0, 500)
 frame.Position = UDim2.new(0.1, 0, 0.1, 0)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
 
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 50)
-title.Text = "Vlad Ball Hack Menü"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "VLAD BALL HACK MENU"
 title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.SourceSansBold
-title.TextSize = 24
+title.TextSize = 22
 
--- Funktion zum Erstellen von Buttons
-local yOffset = 60
-function createButton(text, callback)
-	local button = Instance.new("TextButton", frame)
-	button.Size = UDim2.new(1, -20, 0, 40)
-	button.Position = UDim2.new(0, 10, 0, yOffset)
-	button.Text = text
-	button.TextColor3 = Color3.fromRGB(255, 255, 255)
-	button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	button.BorderSizePixel = 0
-	button.Font = Enum.Font.SourceSans
-	button.TextSize = 18
-	button.MouseButton1Click:Connect(callback)
+-- Button-Funktion
+local yOffset = 50
+local toggles = {}
+
+function createToggle(text, onActivate, onDeactivate)
+	local state = false
+
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(1, -20, 0, 40)
+	btn.Position = UDim2.new(0, 10, 0, yOffset)
+	btn.Text = "[OFF] " .. text
+	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Font = Enum.Font.SourceSans
+	btn.TextSize = 18
+	btn.BorderSizePixel = 0
+
+	btn.MouseButton1Click:Connect(function()
+		state = not state
+		btn.Text = (state and "[ON] " or "[OFF] ") .. text
+		if state then
+			onActivate()
+		else
+			onDeactivate()
+		end
+	end)
+
 	yOffset = yOffset + 45
+	toggles[text] = {button = btn, state = state}
 end
 
--- Funktionen
+-- Hilfsfunktion
 function findBall()
 	for _, v in ipairs(workspace:GetDescendants()) do
 		if v:IsA("Part") and v.Name:lower():find("ball") then
@@ -48,104 +64,100 @@ function findBall()
 	end
 end
 
-createButton("Auto Catch Ball", function()
-	local ball = findBall()
-	if ball then
-		LocalPlayer.Character.HumanoidRootPart.CFrame = ball.CFrame
-	end
+-- HACKS:
+
+-- 1. Auto Teleport zum Ball (mit Abstand)
+local tpAuraLoop
+createToggle("Teleport Aura", function()
+	tpAuraLoop = true
+	task.spawn(function()
+		while tpAuraLoop do
+			local ball = findBall()
+			if ball then
+				local pos = ball.Position + Vector3.new(5, 0, 5)
+				LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
+			end
+			wait(0.2)
+		end
+	end)
+end, function()
+	tpAuraLoop = false
 end)
 
-createButton("Instant Score", function()
-	local ball = findBall()
-	if ball then
-		ball.CFrame = CFrame.new(Vector3.new(9999, 9999, 9999))
-	end
-end)
-
-createButton("Super Speed", function()
+-- 2. Super Speed
+createToggle("Super Speed", function()
 	LocalPlayer.Character.Humanoid.WalkSpeed = 100
-end)
-
-createButton("Reset Speed", function()
+end, function()
 	LocalPlayer.Character.Humanoid.WalkSpeed = 16
 end)
 
-createButton("Infinite Jump", function()
-	game:GetService("UserInputService").JumpRequest:Connect(function()
+-- 3. Infinite Jump
+local ijConnection
+createToggle("Infinite Jump", function()
+	ijConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
 		LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
 	end)
+end, function()
+	if ijConnection then ijConnection:Disconnect() end
 end)
 
-createButton("Teleport Aura", function()
-	while wait(0.1) do
-		local ball = findBall()
-		if ball then
-			local pos = ball.Position + Vector3.new(5, 0, 5)
-			LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
+-- 4. Ball Aimbot (setzt Ball auf Gegnerposition)
+local aimbotLoop
+createToggle("Ball Aimbot", function()
+	aimbotLoop = true
+	task.spawn(function()
+		while aimbotLoop do
+			local ball = findBall()
+			for _, plr in pairs(Players:GetPlayers()) do
+				if plr ~= LocalPlayer and plr.Character then
+					local target = plr.Character:FindFirstChild("HumanoidRootPart")
+					if ball and target then
+						ball.CFrame = CFrame.new(target.Position)
+					end
+				end
+			end
+			wait(0.5)
+		end
+	end)
+end, function()
+	aimbotLoop = false
+end)
+
+-- 5. Enemy Blocker (Kill andere Spieler)
+createToggle("Enemy Blocker", function()
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer and plr.Character then
+			plr.Character:BreakJoints()
 		end
 	end
-end)
+end, function() end)
 
-createButton("Instant Respawn", function()
+-- 6. Instant Respawn
+createToggle("Instant Respawn", function()
 	LocalPlayer.Character:BreakJoints()
-end)
+end, function() end)
 
-createButton("Enemy Blocker", function()
-	for _, player in pairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer and player.Character then
-			player.Character:BreakJoints()
-		end
-	end
-end)
-
-createButton("No Cooldown (Ball Speed)", function()
+-- 7. Ball Speed Boost
+createToggle("Ball Boost", function()
 	local ball = findBall()
 	if ball then
 		ball.Velocity = Vector3.new(999, 0, 999)
 	end
-end)
+end, function() end)
 
-createButton("Ball Aimbot", function()
-	local ball = findBall()
-	local target = nil
-	for _, player in pairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer and player.Character then
-			target = player.Character:FindFirstChild("HumanoidRootPart")
-			break
-		end
-	end
-	if ball and target then
-		ball.CFrame = CFrame.new(target.Position)
-	end
-end)
-
--- Frame draggen lassen
-local UIS = game:GetService("UserInputService")
-local dragging, dragInput, dragStart, startPos
-
-frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = frame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
+-- 8. Auto Catch Ball (TP zum Ball direkt)
+local autoCatch
+createToggle("Auto Catch", function()
+	autoCatch = true
+	task.spawn(function()
+		while autoCatch do
+			local ball = findBall()
+			if ball then
+				LocalPlayer.Character.HumanoidRootPart.CFrame = ball.CFrame
 			end
-		end)
-	end
-end)
-
-frame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
-	end
-end)
-
-UIS.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		local delta = input.Position - dragStart
-		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-	end
+			wait(0.3)
+		end
+	end)
+end, function()
+	autoCatch = false
 end)
