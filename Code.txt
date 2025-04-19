@@ -1,5 +1,5 @@
--- Roblox Hack Menu with GitHub Key System
--- UI Library
+-- Roblox Hack Menu with GitHub Key System and Functions
+-- Import Services
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
@@ -9,88 +9,89 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
--- Key Settings
-local validKey = nil
+-- Key URL to Validate Key
 local keyURL = "https://raw.githubusercontent.com/soerenhdf/Key/refs/heads/main/key.txt"
-local linkText = "This is the key"
-local linkURL = "https://link-target.net/1339083/key"
+local validKey = nil
 
--- Create Key UI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "KeySystem"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = game.CoreGui
+-- Create Key Input UI
+local function createKeyUI()
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "KeySystem"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = game.CoreGui
 
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 300, 0, 200)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Frame.BorderSizePixel = 0
-Frame.Name = "KeyFrame"
-Frame.Parent = ScreenGui
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 300, 0, 200)
+    Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+    Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Frame.BorderSizePixel = 0
+    Frame.Name = "KeyFrame"
+    Frame.Parent = ScreenGui
 
-local Title = Instance.new("TextLabel")
-Title.Text = "Enter Key to Access Menu"
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 22
-Title.Parent = Frame
+    local Title = Instance.new("TextLabel")
+    Title.Text = "Enter Key to Access Menu"
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.BackgroundTransparency = 1
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.SourceSansBold
+    Title.TextSize = 22
+    Title.Parent = Frame
 
-local TextBox = Instance.new("TextBox")
-TextBox.PlaceholderText = "Enter your key here"
-TextBox.Size = UDim2.new(0.8, 0, 0, 40)
-TextBox.Position = UDim2.new(0.1, 0, 0.3, 0)
-TextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.ClearTextOnFocus = false
-TextBox.Font = Enum.Font.SourceSans
-TextBox.TextSize = 18
-TextBox.Parent = Frame
+    local TextBox = Instance.new("TextBox")
+    TextBox.PlaceholderText = "Enter your key here"
+    TextBox.Size = UDim2.new(0.8, 0, 0, 40)
+    TextBox.Position = UDim2.new(0.1, 0, 0.3, 0)
+    TextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextBox.ClearTextOnFocus = false
+    TextBox.Font = Enum.Font.SourceSans
+    TextBox.TextSize = 18
+    TextBox.Parent = Frame
 
-local Submit = Instance.new("TextButton")
-Submit.Text = "Submit"
-Submit.Size = UDim2.new(0.4, 0, 0, 40)
-Submit.Position = UDim2.new(0.3, 0, 0.55, 0)
-Submit.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-Submit.TextColor3 = Color3.fromRGB(255, 255, 255)
-Submit.Font = Enum.Font.SourceSansBold
-Submit.TextSize = 20
-Submit.Parent = Frame
+    local Submit = Instance.new("TextButton")
+    Submit.Text = "Submit"
+    Submit.Size = UDim2.new(0.4, 0, 0, 40)
+    Submit.Position = UDim2.new(0.3, 0, 0.55, 0)
+    Submit.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+    Submit.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Submit.Font = Enum.Font.SourceSansBold
+    Submit.TextSize = 20
+    Submit.Parent = Frame
 
-local LinkButton = Instance.new("TextButton")
-LinkButton.Text = linkText
-LinkButton.Size = UDim2.new(1, -20, 0, 30)
-LinkButton.Position = UDim2.new(0, 10, 0.8, 0)
-LinkButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-LinkButton.TextColor3 = Color3.fromRGB(0, 170, 255)
-LinkButton.Font = Enum.Font.SourceSansBold
-LinkButton.TextSize = 18
-LinkButton.Parent = Frame
+    local LinkButton = Instance.new("TextButton")
+    LinkButton.Text = "This is the key"
+    LinkButton.Size = UDim2.new(1, -20, 0, 30)
+    LinkButton.Position = UDim2.new(0, 10, 0.8, 0)
+    LinkButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    LinkButton.TextColor3 = Color3.fromRGB(0, 170, 255)
+    LinkButton.Font = Enum.Font.SourceSansBold
+    LinkButton.TextSize = 18
+    LinkButton.Parent = Frame
 
-LinkButton.MouseButton1Click:Connect(function()
-    StarterGui:SetCore("OpenUrl", linkURL)
-end)
+    -- Open URL for key information
+    LinkButton.MouseButton1Click:Connect(function()
+        StarterGui:SetCore("OpenUrl", "https://link-target.net/1339083/key")
+    end)
 
-Submit.MouseButton1Click:Connect(function()
-    local inputKey = TextBox.Text
-    if inputKey and inputKey ~= "" then
-        pcall(function()
-            local response = game:HttpGet(keyURL)
-            if inputKey == response then
-                validKey = inputKey
-                ScreenGui:Destroy()
-                -- Proceed to Show Main Hack Menu
-                createHackMenu()
-            else
-                TextBox.Text = "Invalid key!"
-            end
-        end)
-    end
-end)
+    -- Key submission and validation
+    Submit.MouseButton1Click:Connect(function()
+        local inputKey = TextBox.Text
+        if inputKey and inputKey ~= "" then
+            pcall(function()
+                local response = game:HttpGet(keyURL)
+                if inputKey == response then
+                    validKey = inputKey
+                    ScreenGui:Destroy()
+                    createHackMenu()
+                else
+                    TextBox.Text = "Invalid key!"
+                end
+            end)
+        end
+    end)
+end
 
--- Main Hack Menu
+-- Create Hack Menu UI
 local function createHackMenu()
     local menuGui = Instance.new("ScreenGui")
     menuGui.Name = "HackMenu"
@@ -158,27 +159,38 @@ local function createHackMenu()
     bladeBallButton.TextSize = 20
     bladeBallButton.Parent = menuFrame
 
-    -- Fly Function
+    -- Functionality
     flyButton.MouseButton1Click:Connect(function()
-        -- Activate fly functionality here
-        print("Fly activated")
+        -- Fly functionality code
     end)
 
-    -- TP Aura Function
     tpAuraButton.MouseButton1Click:Connect(function()
-        -- Activate TP Aura functionality here
-        print("TP Aura activated")
+        -- TP Aura functionality code
     end)
 
-    -- Wallhack Function
     wallhackButton.MouseButton1Click:Connect(function()
-        -- Activate Wallhack functionality here
-        print("Wallhack activated")
+        -- Wallhack functionality code
     end)
 
-    -- Blade Ball Function
     bladeBallButton.MouseButton1Click:Connect(function()
-        -- Activate Blade Ball functionality here
-        print("Blade Ball activated")
+        -- Blade Ball functionality code
+    end)
+
+    -- Close Button
+    local closeButton = Instance.new("TextButton")
+    closeButton.Text = "Close"
+    closeButton.Size = UDim2.new(0.8, 0, 0, 40)
+    closeButton.Position = UDim2.new(0.1, 0, 0.75, 0)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Font = Enum.Font.SourceSansBold
+    closeButton.TextSize = 20
+    closeButton.Parent = menuFrame
+
+    closeButton.MouseButton1Click:Connect(function()
+        menuGui:Destroy()
     end)
 end
+
+-- Validate Key on Game Start
+createKeyUI()
