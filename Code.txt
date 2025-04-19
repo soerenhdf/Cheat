@@ -9,7 +9,7 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
--- Key URL to Validate Key
+-- Key URL to Validate Key (Raw version)
 local keyURL = "https://raw.githubusercontent.com/soerenhdf/Key/refs/heads/main/key.txt"
 local validKey = nil
 
@@ -70,7 +70,8 @@ local function createKeyUI()
 
     -- Open URL for key information
     LinkButton.MouseButton1Click:Connect(function()
-        StarterGui:SetCore("OpenUrl", "https://link-target.net/1339083/key")
+        -- Use the following method to open the URL in the browser
+        game:GetService("GuiService"):OpenBrowserWindow("https://link-target.net/1339083/key")
     end)
 
     -- Key submission and validation
@@ -78,7 +79,7 @@ local function createKeyUI()
         local inputKey = TextBox.Text
         if inputKey and inputKey ~= "" then
             pcall(function()
-                local response = game:HttpGet(keyURL)
+                local response = HttpService:GetAsync(keyURL)
                 if inputKey == response then
                     validKey = inputKey
                     ScreenGui:Destroy()
@@ -159,23 +160,6 @@ local function createHackMenu()
     bladeBallButton.TextSize = 20
     bladeBallButton.Parent = menuFrame
 
-    -- Functionality
-    flyButton.MouseButton1Click:Connect(function()
-        -- Fly functionality code
-    end)
-
-    tpAuraButton.MouseButton1Click:Connect(function()
-        -- TP Aura functionality code
-    end)
-
-    wallhackButton.MouseButton1Click:Connect(function()
-        -- Wallhack functionality code
-    end)
-
-    bladeBallButton.MouseButton1Click:Connect(function()
-        -- Blade Ball functionality code
-    end)
-
     -- Close Button
     local closeButton = Instance.new("TextButton")
     closeButton.Text = "Close"
@@ -192,5 +176,5 @@ local function createHackMenu()
     end)
 end
 
--- Validate Key on Game Start
+-- Start the Key UI when the game starts
 createKeyUI()
