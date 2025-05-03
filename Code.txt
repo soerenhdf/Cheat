@@ -11,8 +11,6 @@ Toggle.TextScaled = true
 local aiRunning = false
 local player = game.Players.LocalPlayer
 local pathfindingService = game:GetService("PathfindingService")
-local espRadius = 3  -- ESP Umkreis auf 5 Studs ändern
-
 local targetPosition = nil
 
 -- Wenn der Spieler auf einen Punkt klickt
@@ -49,23 +47,6 @@ local function startAI(target)
     aiRunning = false
 end
 
--- ESP für nahe Objekte
-local function espObjectsInRange()
-    for _, part in pairs(workspace:GetDescendants()) do
-        if part:IsA("BasePart") and (part.Position - player.Character.HumanoidRootPart.Position).Magnitude < espRadius then
-            -- Überprüfe, ob es nicht der Spieler ist
-            if part.Parent ~= player.Character then
-                local box = Instance.new("BoxHandleAdornment")
-                box.Parent = part
-                box.Adornee = part
-                box.Size = part.Size + Vector3.new(0.2, 0.2, 0.2)
-                box.Color3 = Color3.fromRGB(0, 255, 0) -- Grüner Rand
-                box.AlwaysOnTop = true
-            end
-        end
-    end
-end
-
 -- Stoppen der KI
 local function stopAI()
     aiRunning = false
@@ -82,8 +63,10 @@ Toggle.MouseButton1Click:Connect(function()
     end
 end)
 
--- Update ESP in der Nähe
+-- Funktion um die KI kontinuierlich zu steuern
 while true do
-    espObjectsInRange()
-    wait(0.5)  -- ESP alle 0.5 Sekunden aktualisieren
+    if aiRunning and targetPosition then
+        startAI(targetPosition)  -- Sicherstellen, dass der AI-Pfad kontinuierlich verfolgt wird
+    end
+    wait(0.5)  -- Verzögerung, um die CPU-Belastung zu minimieren
 end
