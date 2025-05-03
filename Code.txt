@@ -1,55 +1,52 @@
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
+--[[
+  Arceus X NEO - Obby KI Script
+  Läuft automatisch durch Obbys, erkennt Hindernisse
+--]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+repeat wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+local character = player.Character
 local humanoid = character:WaitForChild("Humanoid")
 local hrp = character:WaitForChild("HumanoidRootPart")
-local startPosition = CFrame.new(0, 10, 0)  -- Startposition für das Obby
 
-local obstacles = {}  -- Sammlung von Hindernissen
-
--- Funktion zum Hinzufügen von Hindernissen
-local function findObstacles()
-    for _, object in pairs(workspace:GetChildren()) do
-        if object:IsA("Part") and object.Name == "Obstacle" then
-            table.insert(obstacles, object)
-        end
+-- Funktion zum Hervorheben von Hindernissen (ESP)
+for _, part in pairs(workspace:GetDescendants()) do
+    if part:IsA("Part") and part.CanCollide and part.Position.Y > 2 then
+        local box = Instance.new("BoxHandleAdornment")
+        box.Adornee = part
+        box.AlwaysOnTop = true
+        box.ZIndex = 10
+        box.Size = part.Size + Vector3.new(0.1, 0.1, 0.1)
+        box.Color3 = Color3.fromRGB(255, 0, 0)
+        box.Transparency = 0.4
+        box.Parent = part
     end
 end
 
--- Grundlegende KI-Funktion, um Hindernisse zu umgehen
-local function moveAI()
-    -- Bewege den Spieler in eine zufällige Richtung
-    local moveDirection = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1))
-    humanoid:MoveTo(hrp.Position + moveDirection)
-
-    -- Überprüfe, ob das AI-Objekt ein Hindernis erkennt und weicht aus
-    for _, obstacle in pairs(obstacles) do
-        if (hrp.Position - obstacle.Position).Magnitude < 5 then
-            -- Hindernis in der Nähe, weiche aus
-            humanoid:MoveTo(hrp.Position + (hrp.Position - obstacle.Position).unit * 10)
-        end
+-- Automatischer Vorwärtslauf
+local function moveForward()
+    if humanoid and humanoid.MoveToFinished then
+        local pos = hrp.Position
+        local forward = Vector3.new(0, 0, -5)
+        humanoid:MoveTo(pos + forward)
     end
 end
 
--- Funktion für die Kollisionserkennung und -umgehung
-local function detectCollision()
-    while true do
-        -- Überprüfe, ob der Humanoid mit einem Hindernis kollidiert
-        for _, obstacle in pairs(obstacles) do
-            if (hrp.Position - obstacle.Position).Magnitude < 5 then
-                -- Kollision erkannt, bewege den Charakter weg
-                humanoid:MoveTo(hrp.Position + (hrp.Position - obstacle.Position).unit * 10)
-            end
-        end
-        wait(0.1)
+-- Hindernissen ausweichen (simpler check)
+local function avoidObstacles()
+    local ray = Ray.new(hrp.Position, Vector3.new(0, 0, -5))
+    local hit = workspace:FindPartOnRay(ray, character)
+    if hit and hit.CanCollide then
+        -- Springen wenn Hindernis erkannt wird
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end
 
--- Starte das Finden von Hindernissen und die KI-Bewegung
-findObstacles()
-detectCollision()
-
--- Bewege die KI kontinuierlich
-while true do
-    moveAI()
-    wait(1)  -- Update alle 1 Sekunde
-end
+-- Hauptloop
+RunService.RenderStepped:Connect(function()
+    avoidObstacles()
+    moveForward()
+end)
