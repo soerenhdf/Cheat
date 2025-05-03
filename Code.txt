@@ -15,6 +15,12 @@ local espRadius = 5  -- ESP Umkreis auf 5 Studs ändern
 local pathfindingService = game:GetService("PathfindingService")
 local espObjects = {}
 
+-- Überprüfe, ob ein Block im Weg ist
+local function checkForObstacles(position)
+    local ray = workspace:Raycast(position, Vector3.new(0, -1, 0) * 5, RaycastParams.new())
+    return ray and ray.Instance
+end
+
 -- Funktion zum Erkennen der Checkpoints
 local function getNextCheckpoint()
     local nearestCheckpoint = nil
@@ -65,49 +71,6 @@ local function startAI()
             -- Keine Checkpoints gefunden, KI wartet
             wait(1)
         end
-    end
-end
-
--- Funktion für das automatische Durchlaufen des Obbys mit Hindernis-Erkennung
-local function autoObby()
-    local character = player.Character
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    local humanoid = character:WaitForChild("Humanoid")
-
-    while aiRunning do
-        -- Wenn der Charakter vor einem Hindernis steht, springt er
-        local ray = workspace:Raycast(humanoidRootPart.Position, humanoidRootPart.CFrame.LookVector * 5, RaycastParams.new())
-        
-        -- Wenn Hindernis erkannt wird, springt der Charakter
-        if ray and ray.Instance then
-            if ray.Instance:IsA("BasePart") and ray.Instance.Name ~= "Checkpoint" then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end
-
-        -- Weiterlaufen in Richtung des nächsten Checkpoints
-        local checkpoint = getNextCheckpoint()
-        if checkpoint then
-            -- Bewege den Spieler zum nächsten Checkpoint
-            local path = pathfindingService:CreatePath({
-                AgentRadius = 2,
-                AgentHeight = 5,
-                AgentCanJump = true,
-                AgentJumpHeight = 10,
-                AgentMaxSlope = 45,
-            })
-            path:ComputeAsync(humanoidRootPart.Position, checkpoint.Position)
-            path:MoveTo(character)
-            path.Completed:Wait()
-
-            -- Markiere den Checkpoint als aktiviert
-            if checkpoint:FindFirstChild("Activated") == nil then
-                local activatedTag = Instance.new("BoolValue")
-                activatedTag.Name = "Activated"
-                activatedTag.Parent = checkpoint
-            end
-        end
-        wait(0.5) -- Kleine Pause, um die Performance zu verbessern
     end
 end
 
