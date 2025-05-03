@@ -1,33 +1,55 @@
-local ScreenGui = Instance.new("ScreenGui")
-local TextBox = Instance.new("TextBox")
-local SubmitButton = Instance.new("TextButton")
-local playerTikTokName = "tale_stars"  -- TikTok Name von dir, direkt eingetragen
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
+local startPosition = CFrame.new(0, 10, 0)  -- Startposition für das Obby
 
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local obstacles = {}  -- Sammlung von Hindernissen
 
-TextBox.Parent = ScreenGui
-TextBox.Size = UDim2.new(0, 300, 0, 50)
-TextBox.Position = UDim2.new(0.5, -150, 0.4, 0)
-TextBox.PlaceholderText = "Gib deinen TikTok-Namen ein"
-
-SubmitButton.Parent = ScreenGui
-SubmitButton.Size = UDim2.new(0, 200, 0, 50)
-SubmitButton.Position = UDim2.new(0.5, -100, 0.5, 0)
-SubmitButton.Text = "Bestätigen"
-
--- Funktion zum Zurücksetzen des Spielers
-local function resetPlayerToStart()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local hrp = character:WaitForChild("HumanoidRootPart")
-    
-    -- Setze den Spieler zum Startpunkt zurück
-    hrp.CFrame = CFrame.new(0, 10, 0)  -- Beispiel-Startpunkt (0, 10, 0)
+-- Funktion zum Hinzufügen von Hindernissen
+local function findObstacles()
+    for _, object in pairs(workspace:GetChildren()) do
+        if object:IsA("Part") and object.Name == "Obstacle" then
+            table.insert(obstacles, object)
+        end
+    end
 end
 
--- Event-Handler für die Bestätigung des TikTok-Namens
-SubmitButton.MouseButton1Click:Connect(function()
-    playerTikTokName = TextBox.Text
-    print("TikTok Name eingetragen: " .. playerTikTokName)
-    resetPlayerToStart()  -- Spieler wird sofort zum Startpunkt zurückgesetzt
-end)
+-- Grundlegende KI-Funktion, um Hindernisse zu umgehen
+local function moveAI()
+    -- Bewege den Spieler in eine zufällige Richtung
+    local moveDirection = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1))
+    humanoid:MoveTo(hrp.Position + moveDirection)
+
+    -- Überprüfe, ob das AI-Objekt ein Hindernis erkennt und weicht aus
+    for _, obstacle in pairs(obstacles) do
+        if (hrp.Position - obstacle.Position).Magnitude < 5 then
+            -- Hindernis in der Nähe, weiche aus
+            humanoid:MoveTo(hrp.Position + (hrp.Position - obstacle.Position).unit * 10)
+        end
+    end
+end
+
+-- Funktion für die Kollisionserkennung und -umgehung
+local function detectCollision()
+    while true do
+        -- Überprüfe, ob der Humanoid mit einem Hindernis kollidiert
+        for _, obstacle in pairs(obstacles) do
+            if (hrp.Position - obstacle.Position).Magnitude < 5 then
+                -- Kollision erkannt, bewege den Charakter weg
+                humanoid:MoveTo(hrp.Position + (hrp.Position - obstacle.Position).unit * 10)
+            end
+        end
+        wait(0.1)
+    end
+end
+
+-- Starte das Finden von Hindernissen und die KI-Bewegung
+findObstacles()
+detectCollision()
+
+-- Bewege die KI kontinuierlich
+while true do
+    moveAI()
+    wait(1)  -- Update alle 1 Sekunde
+end
