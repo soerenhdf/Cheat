@@ -8,96 +8,102 @@ Toggle.TextColor3 = Color3.new(1, 1, 1)
 Toggle.Text = "Start AI"
 Toggle.TextScaled = true
 
--- Variablen
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local humanoid = char:WaitForChild("Humanoid")
-local hrp = char:WaitForChild("HumanoidRootPart")
-local KI_ACTIVE = false
-local lastJumpTime = 0
-local jumpCooldown = 0.5
-local raycastParams = RaycastParams.new()
-raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-raycastParams.FilterDescendantsInstances = {char}
+local aiRunning = false
+local checkpoints = {}
+local player = game.Players.LocalPlayer
+local espRadius = 10  -- ESP Umkreis
+local pathfindingService = game:GetService("PathfindingService")
+local espObjects = {}
 
--- ESP Funktion
-local function createESP(part)
-    if part:IsA("BasePart") and not part:FindFirstChild("ESP") then
-        local box = Instance.new("BoxHandleAdornment")
-        box.Name = "ESP"
-        box.Adornee = part
-        box.AlwaysOnTop = true
-        box.ZIndex = 0
-        box.Size = part.Size + Vector3.new(0.1, 0.1, 0.1)
-        box.Transparency = 0.5
-        box.Color3 = Color3.new(0, 1, 0)
-        box.Parent = part
-    end
-end
+-- Funktion zum Erkennen der Checkpoints
+local function getNextCheckpoint()
+    local nearestCheckpoint = nil
+    local shortestDistance = math.huge
 
--- Alle Teile im Workspace markieren
-for _, obj in pairs(workspace:GetDescendants()) do
-    createESP(obj)
-end
-
--- Neue Objekte beobachten
-workspace.DescendantAdded:Connect(function(obj)
-    task.wait(0.1)
-    createESP(obj)
-end)
-
--- Hindernis-Jump
-local function jumpIfObstacle()
-    local front = hrp.Position + hrp.CFrame.LookVector * 4 + Vector3.new(0, 2, 0)
-    local ray = workspace:Raycast(front, Vector3.new(0, -4, 0), raycastParams)
-    if ray and tick() - lastJumpTime > jumpCooldown then
-        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        lastJumpTime = tick()
-    end
-end
-
--- Suche nächste Plattform
-local function findNextPlatform()
-    for dist = 5, 30, 2 do
-        local checkPos = hrp.Position + hrp.CFrame.LookVector * dist
-        local rayOrigin = checkPos + Vector3.new(0, 5, 0)
-        local rayDir = Vector3.new(0, -10, 0)
-        local result = workspace:Raycast(rayOrigin, rayDir, raycastParams)
-        if result then
-            return result.Position
-        end
-    end
-    return nil
-end
-
--- KI Loop
-RunService.RenderStepped:Connect(function()
-    if KI_ACTIVE then
-        local groundBelow = workspace:Raycast(hrp.Position, Vector3.new(0, -5, 0), raycastParams)
-
-        if groundBelow then
-            humanoid:Move(Vector3.new(0, 0, -1), false)
-            jumpIfObstacle()
-        else
-            local nextPlatform = findNextPlatform()
-            if nextPlatform then
-                local direction = (nextPlatform - hrp.Position).Unit
-                humanoid:Move(direction, false)
-                if (nextPlatform - hrp.Position).Magnitude < 7 and tick() - lastJumpTime > jumpCooldown then
-                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                    lastJumpTime = tick()
-                end
-            else
-                humanoid:Move(Vector3.zero, false)
+    -- Alle Teile in der Nähe durchsuchen
+    for _, part in pairs(workspace:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name == "Checkpoint" and not part:FindFirstChild("Activated") then
+            local dist = (player.Character.HumanoidRootPart.Position - part.Position).Magnitude
+            if dist < shortestDistance then
+                nearestCheckpoint = part
+                shortestDistance = dist
             end
         end
     end
+    return nearestCheckpoint
+end
+
+-- KI starten
+local function startAI()
+    aiRunning = true
+    while aiRunning do
+        local checkpoint = getNextCheckpoint()
+
+        if checkpoint then
+            -- Berechnung des Weges zum nächsten Checkpoint
+            local path = pathfindingService:CreatePath({
+                AgentRadius = 2,
+                AgentHeight = 5,
+                AgentCanJump = true,
+                AgentJumpHeight = 10,
+                AgentMaxSlope = 45,
+            })
+
+            path:ComputeAsync(player.Character.HumanoidRootPart.Position, checkpoint.Position)
+            path:MoveTo(player.Character)
+
+            -- Warten bis der Checkpoint erreicht wurde
+            path.Completed:Wait()
+
+            -- Markiere den Checkpoint als aktiviert
+            if checkpoint:FindFirstChild("Activated") == nil then
+                local activatedTag = Instance.new("BoolValue")
+                activatedTag.Name = "Activated"
+                activatedTag.Parent = checkpoint
+            end
+        else
+            -- Keine Checkpoints gefunden, KI wartet
+            wait(1)
+        end
+    end
+end
+
+-- ESP für nahe Objekte
+local function espObjectsInRange()
+    for _, part in pairs(workspace:GetDescendants()) do
+        if part:IsA("BasePart") and (part.Position - player.Character.HumanoidRootPart.Position).Magnitude < espRadius then
+            -- Überprüfe, ob es nicht der Spieler ist
+            if part.Parent ~= player.Character then
+                local box = Instance.new("BoxHandleAdornment")
+                box.Parent = part
+                box.Adornee = part
+                box.Size = part.Size + Vector3.new(0.2, 0.2, 0.2)
+                box.Color3 = Color3.fromRGB(0, 255, 0) -- Grüner Rand
+                box.AlwaysOnTop = true
+                table.insert(espObjects, box)
+            end
+        end
+    end
+end
+
+-- Stoppen der KI
+local function stopAI()
+    aiRunning = false
+end
+
+-- Button für das Starten/Stoppen der KI
+Toggle.MouseButton1Click:Connect(function()
+    if aiRunning then
+        stopAI()
+        Toggle.Text = "Start AI"
+    else
+        startAI()
+        Toggle.Text = "Stop AI"
+    end
 end)
 
--- Button Funktion
-Toggle.MouseButton1Click:Connect(function()
-    KI_ACTIVE = not KI_ACTIVE
-    Toggle.Text = KI_ACTIVE and "Stop AI" or "Start AI"
-end)
+-- Update ESP in der Nähe
+while true do
+    espObjectsInRange()
+    wait(0.5)  -- ESP alle 0.5 Sekunden aktualisieren
+end
