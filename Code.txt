@@ -9,69 +9,44 @@ Toggle.Text = "Start AI"
 Toggle.TextScaled = true
 
 local aiRunning = false
-local checkpoints = {}
 local player = game.Players.LocalPlayer
-local espRadius = 2  -- ESP Umkreis auf 5 Studs ändern
 local pathfindingService = game:GetService("PathfindingService")
-local espObjects = {}
+local espRadius = 3  -- ESP Umkreis auf 5 Studs ändern
 
--- Überprüfe, ob ein Block im Weg ist
-local function checkForObstacles(position)
-    local ray = workspace:Raycast(position, Vector3.new(0, -1, 0) * 5, RaycastParams.new())
-    return ray and ray.Instance
-end
+local targetPosition = nil
 
--- Funktion zum Erkennen der Checkpoints
-local function getNextCheckpoint()
-    local nearestCheckpoint = nil
-    local shortestDistance = math.huge
-
-    -- Alle Teile in der Nähe durchsuchen
-    for _, part in pairs(workspace:GetDescendants()) do
-        if part:IsA("BasePart") and part.Name == "Checkpoint" and not part:FindFirstChild("Activated") then
-            local dist = (player.Character.HumanoidRootPart.Position - part.Position).Magnitude
-            if dist < shortestDistance then
-                nearestCheckpoint = part
-                shortestDistance = dist
-            end
+-- Wenn der Spieler auf einen Punkt klickt
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        targetPosition = workspace.CurrentCamera:ScreenToWorldPoint(Vector3.new(input.Position.X, input.Position.Y, 0))
+        if targetPosition then
+            -- Starte den Wegplanungsprozess
+            startAI(targetPosition)
         end
     end
-    return nearestCheckpoint
-end
+end)
 
--- KI starten
-local function startAI()
+-- KI starten, um zum Ziel zu gehen
+local function startAI(target)
     aiRunning = true
-    while aiRunning do
-        local checkpoint = getNextCheckpoint()
+    local path = pathfindingService:CreatePath({
+        AgentRadius = 2,
+        AgentHeight = 5,
+        AgentCanJump = true,
+        AgentJumpHeight = 10,
+        AgentMaxSlope = 45,
+    })
 
-        if checkpoint then
-            -- Berechnung des Weges zum nächsten Checkpoint
-            local path = pathfindingService:CreatePath({
-                AgentRadius = 2,
-                AgentHeight = 5,
-                AgentCanJump = true,
-                AgentJumpHeight = 10,
-                AgentMaxSlope = 45,
-            })
+    -- Berechne den Pfad zum Ziel
+    path:ComputeAsync(player.Character.HumanoidRootPart.Position, target)
 
-            path:ComputeAsync(player.Character.HumanoidRootPart.Position, checkpoint.Position)
-            path:MoveTo(player.Character)
+    -- Bewege den Charakter entlang des Pfades
+    path:MoveTo(player.Character)
 
-            -- Warten bis der Checkpoint erreicht wurde
-            path.Completed:Wait()
-
-            -- Markiere den Checkpoint als aktiviert
-            if checkpoint:FindFirstChild("Activated") == nil then
-                local activatedTag = Instance.new("BoolValue")
-                activatedTag.Name = "Activated"
-                activatedTag.Parent = checkpoint
-            end
-        else
-            -- Keine Checkpoints gefunden, KI wartet
-            wait(1)
-        end
-    end
+    -- Wenn der Pfad abgeschlossen ist, stoppe die KI
+    path.Completed:Wait()
+    aiRunning = false
 end
 
 -- ESP für nahe Objekte
@@ -102,7 +77,7 @@ Toggle.MouseButton1Click:Connect(function()
         stopAI()
         Toggle.Text = "Start AI"
     else
-        startAI()
+        startAI(targetPosition)
         Toggle.Text = "Stop AI"
     end
 end)
@@ -110,5 +85,5 @@ end)
 -- Update ESP in der Nähe
 while true do
     espObjectsInRange()
-    wait(1)  -- ESP alle 0.5 Sekunden aktualisieren
+    wait(0.5)  -- ESP alle 0.5 Sekunden aktualisieren
 end
