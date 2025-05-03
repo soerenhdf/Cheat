@@ -11,7 +11,7 @@ Toggle.TextScaled = true
 local aiRunning = false
 local checkpoints = {}
 local player = game.Players.LocalPlayer
-local espRadius = 5  -- ESP Umkreis auf 5 Studs ändern
+local espRadius = 2  -- ESP Umkreis auf 5 Studs ändern
 local pathfindingService = game:GetService("PathfindingService")
 local espObjects = {}
 
