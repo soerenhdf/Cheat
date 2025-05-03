@@ -1,52 +1,73 @@
---[[
-  Arceus X NEO - Obby KI Script
-  Läuft automatisch durch Obbys, erkennt Hindernisse
---]]
-
+-- Arceus X NEO: Obby KI mit GUI, Lernverhalten & Plattform-Erkennung
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
-
-repeat wait() until player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-local character = player.Character
-local humanoid = character:WaitForChild("Humanoid")
+local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
 
--- Funktion zum Hervorheben von Hindernissen (ESP)
+local KI_ACTIVE = false
+local lastJumpTime = 0
+local jumpCooldown = 0.8
+
+-- GUI erstellen
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "ObbyAI_GUI"
+
+local button = Instance.new("TextButton", screenGui)
+button.Size = UDim2.new(0, 100, 0, 40)
+button.Position = UDim2.new(0, 20, 0, 20)
+button.Text = "Start KI"
+button.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+button.TextSize = 18
+
+button.MouseButton1Click:Connect(function()
+    KI_ACTIVE = not KI_ACTIVE
+    button.Text = KI_ACTIVE and "Stop KI" or "Start KI"
+    button.BackgroundColor3 = KI_ACTIVE and Color3.fromRGB(200, 100, 100) or Color3.fromRGB(100, 200, 100)
+end)
+
+-- ESP für Hindernisse
 for _, part in pairs(workspace:GetDescendants()) do
     if part:IsA("Part") and part.CanCollide and part.Position.Y > 2 then
-        local box = Instance.new("BoxHandleAdornment")
+        local box = Instance.new("BoxHandleAdornment", part)
         box.Adornee = part
         box.AlwaysOnTop = true
         box.ZIndex = 10
         box.Size = part.Size + Vector3.new(0.1, 0.1, 0.1)
         box.Color3 = Color3.fromRGB(255, 0, 0)
-        box.Transparency = 0.4
-        box.Parent = part
+        box.Transparency = 0.3
     end
 end
 
--- Automatischer Vorwärtslauf
-local function moveForward()
-    if humanoid and humanoid.MoveToFinished then
-        local pos = hrp.Position
-        local forward = Vector3.new(0, 0, -5)
-        humanoid:MoveTo(pos + forward)
-    end
-end
+-- Einfache lernende KI
+local function jumpIfObstacle()
+    local rayOrigin = hrp.Position
+    local rayDirection = hrp.CFrame.LookVector * 4
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterDescendantsInstances = {character}
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
 
--- Hindernissen ausweichen (simpler check)
-local function avoidObstacles()
-    local ray = Ray.new(hrp.Position, Vector3.new(0, 0, -5))
-    local hit = workspace:FindPartOnRay(ray, character)
-    if hit and hit.CanCollide then
-        -- Springen wenn Hindernis erkannt wird
+    local result = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+    if result and tick() - lastJumpTime > jumpCooldown then
         humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        lastJumpTime = tick()
     end
 end
 
--- Hauptloop
+local function stayOnPlatform()
+    local downRay = workspace:Raycast(hrp.Position, Vector3.new(0, -5, 0), RaycastParams.new())
+    if not downRay then
+        -- Kein Boden unter dem Spieler – neu positionieren
+        hrp.CFrame = hrp.CFrame + Vector3.new(0, 3, 0)
+    end
+end
+
 RunService.RenderStepped:Connect(function()
-    avoidObstacles()
-    moveForward()
+    if KI_ACTIVE then
+        jumpIfObstacle()
+        stayOnPlatform()
+        humanoid:Move(Vector3.new(0, 0, -1), false)
+    end
 end)
