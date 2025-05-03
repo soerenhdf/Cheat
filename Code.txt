@@ -1,71 +1,33 @@
--- Mini Auto Deflect Menü für Vlad Ball
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-repeat wait() until LocalPlayer:FindFirstChild("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui")
+local TextBox = Instance.new("TextBox")
+local SubmitButton = Instance.new("TextButton")
+local playerTikTokName = "tale_stars"  -- TikTok Name von dir, direkt eingetragen
 
--- GUI
-local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-gui.Name = "AutoDeflectMenu"
-gui.ResetOnSpawn = false
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 100)
-frame.Position = UDim2.new(0.1, 0, 0.1, 0)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.Active = true
-frame.Draggable = true
+TextBox.Parent = ScreenGui
+TextBox.Size = UDim2.new(0, 300, 0, 50)
+TextBox.Position = UDim2.new(0.5, -150, 0.4, 0)
+TextBox.PlaceholderText = "Gib deinen TikTok-Namen ein"
 
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 30)
-title.Text = "Auto Deflect"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.BackgroundTransparency = 1
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 22
+SubmitButton.Parent = ScreenGui
+SubmitButton.Size = UDim2.new(0, 200, 0, 50)
+SubmitButton.Position = UDim2.new(0.5, -100, 0.5, 0)
+SubmitButton.Text = "Bestätigen"
 
--- Button
-local btn = Instance.new("TextButton", frame)
-btn.Size = UDim2.new(1, -20, 0, 40)
-btn.Position = UDim2.new(0, 10, 0, 40)
-btn.Text = "[OFF] Auto Block"
-btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn.Font = Enum.Font.SourceSans
-btn.TextSize = 18
-btn.BorderSizePixel = 0
-
--- Deflect-Funktion
-local autoDeflect = false
-local function findBall()
-	for _, v in ipairs(workspace:GetDescendants()) do
-		if v:IsA("Part") and v.Name:lower():find("ball") then
-			return v
-		end
-	end
+-- Funktion zum Zurücksetzen des Spielers
+local function resetPlayerToStart()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+    
+    -- Setze den Spieler zum Startpunkt zurück
+    hrp.CFrame = CFrame.new(0, 10, 0)  -- Beispiel-Startpunkt (0, 10, 0)
 end
 
-btn.MouseButton1Click:Connect(function()
-	autoDeflect = not autoDeflect
-	btn.Text = (autoDeflect and "[ON] " or "[OFF] ") .. "Auto Block"
-
-	if autoDeflect then
-		task.spawn(function()
-			while autoDeflect do
-				local ball = findBall()
-				local char = LocalPlayer.Character
-				if ball and char and char:FindFirstChild("HumanoidRootPart") then
-					local hrp = char.HumanoidRootPart
-					local distance = (ball.Position - hrp.Position).Magnitude
-					if distance < 30 then
-						local args = {
-							[1] = "Deflect",
-							[2] = true
-						}
-						game:GetService("ReplicatedStorage").Remotes.Deflect:FireServer(unpack(args))
-					end
-				end
-				wait(0.01)
-			end
-		end)
-	end
+-- Event-Handler für die Bestätigung des TikTok-Namens
+SubmitButton.MouseButton1Click:Connect(function()
+    playerTikTokName = TextBox.Text
+    print("TikTok Name eingetragen: " .. playerTikTokName)
+    resetPlayerToStart()  -- Spieler wird sofort zum Startpunkt zurückgesetzt
 end)
