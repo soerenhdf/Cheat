@@ -11,7 +11,7 @@ Toggle.TextScaled = true
 local aiRunning = false
 local checkpoints = {}
 local player = game.Players.LocalPlayer
-local espRadius = 10  -- ESP Umkreis
+local espRadius = 5  -- ESP Umkreis auf 5 Studs ändern
 local pathfindingService = game:GetService("PathfindingService")
 local espObjects = {}
 
@@ -68,6 +68,49 @@ local function startAI()
     end
 end
 
+-- Funktion für das automatische Durchlaufen des Obbys mit Hindernis-Erkennung
+local function autoObby()
+    local character = player.Character
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    local humanoid = character:WaitForChild("Humanoid")
+
+    while aiRunning do
+        -- Wenn der Charakter vor einem Hindernis steht, springt er
+        local ray = workspace:Raycast(humanoidRootPart.Position, humanoidRootPart.CFrame.LookVector * 5, RaycastParams.new())
+        
+        -- Wenn Hindernis erkannt wird, springt der Charakter
+        if ray and ray.Instance then
+            if ray.Instance:IsA("BasePart") and ray.Instance.Name ~= "Checkpoint" then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+
+        -- Weiterlaufen in Richtung des nächsten Checkpoints
+        local checkpoint = getNextCheckpoint()
+        if checkpoint then
+            -- Bewege den Spieler zum nächsten Checkpoint
+            local path = pathfindingService:CreatePath({
+                AgentRadius = 2,
+                AgentHeight = 5,
+                AgentCanJump = true,
+                AgentJumpHeight = 10,
+                AgentMaxSlope = 45,
+            })
+            path:ComputeAsync(humanoidRootPart.Position, checkpoint.Position)
+            path:MoveTo(character)
+            path.Completed:Wait()
+
+            -- Markiere den Checkpoint als aktiviert
+            if checkpoint:FindFirstChild("Activated") == nil then
+                local activatedTag = Instance.new("BoolValue")
+                activatedTag.Name = "Activated"
+                activatedTag.Parent = checkpoint
+            end
+        end
+        wait(0.5) -- Kleine Pause, um die Performance zu verbessern
+    end
+end
+
 -- ESP für nahe Objekte
 local function espObjectsInRange()
     for _, part in pairs(workspace:GetDescendants()) do
@@ -80,7 +123,6 @@ local function espObjectsInRange()
                 box.Size = part.Size + Vector3.new(0.2, 0.2, 0.2)
                 box.Color3 = Color3.fromRGB(0, 255, 0) -- Grüner Rand
                 box.AlwaysOnTop = true
-                table.insert(espObjects, box)
             end
         end
     end
@@ -105,5 +147,5 @@ end)
 -- Update ESP in der Nähe
 while true do
     espObjectsInRange()
-    wait(0.5)  -- ESP alle 0.5 Sekunden aktualisieren
+    wait(0.1)  -- ESP alle 0.5 Sekunden aktualisieren
 end
