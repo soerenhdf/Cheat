@@ -1,7 +1,8 @@
 -- Erstelle das ScreenGui für den Start
 local player = game.Players.LocalPlayer
-local pathfindingService = game:GetService("PathfindingService")
+local humanoid = player.Character:WaitForChild("Humanoid")
 local targetPosition = nil
+local speed = 16  -- Geschwindigkeit, mit der der Charakter läuft
 
 -- Wenn der Spieler auf einen Punkt klickt
 game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
@@ -10,39 +11,31 @@ game:GetService("UserInputService").InputBegan:Connect(function(input, gameProce
         -- Berechne die Zielposition auf dem Bildschirm
         targetPosition = workspace.CurrentCamera:ScreenToWorldPoint(Vector3.new(input.Position.X, input.Position.Y, 0))
 
-        -- Sobald das Ziel gesetzt ist, starte das Pfadfinding
+        -- Sobald das Ziel gesetzt ist, starte das Laufen
         if targetPosition then
-            startAI(targetPosition)
+            moveToTarget(targetPosition)
         end
     end
 end)
 
--- KI startet und geht zum Ziel
-local function startAI(target)
-    -- Verwende Pathfinding, um den besten Weg zu finden
-    local path = pathfindingService:CreatePath({
-        AgentRadius = 2,
-        AgentHeight = 5,
-        AgentCanJump = true,
-        AgentJumpHeight = 10,
-        AgentMaxSlope = 45,
-    })
+-- Funktion zum Bewegen des Charakters zum Ziel
+local function moveToTarget(target)
+    while true do
+        -- Berechne den Vektor, der die Richtung vom Spieler zum Ziel zeigt
+        local direction = (target - player.Character.HumanoidRootPart.Position).unit
+        
+        -- Berechne die neue Position basierend auf der Geschwindigkeit
+        local newPosition = player.Character.HumanoidRootPart.Position + direction * speed * 0.1
 
-    -- Berechne den Pfad vom aktuellen Standort des Spielers zum Ziel
-    path:ComputeAsync(player.Character.HumanoidRootPart.Position, target)
+        -- Bewege den Charakter zur neuen Position
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(newPosition)
 
-    -- Bewege den Charakter entlang des Pfades
-    path:MoveTo(player.Character)
+        -- Wenn der Charakter nahe genug am Ziel ist, beende die Bewegung
+        if (newPosition - target).magnitude < 1 then
+            break
+        end
 
-    -- Warte, bis der Pfad abgeschlossen ist
-    path.Completed:Wait()
-end
-
--- Funktion wird alle 0,5 Sekunden wiederholt, um sicherzustellen, dass die KI immer noch auf dem Pfad bleibt
-while true do
-    if targetPosition then
-        -- Wenn ein Ziel festgelegt wurde, starte die KI und führe den Pfad aus
-        startAI(targetPosition)
+        -- Kurze Verzögerung, um die Bewegung zu ermöglichen
+        wait(0.1)
     end
-    wait(0.5)  -- Verzögerung für die Berechnung
 end
