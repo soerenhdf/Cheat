@@ -1,14 +1,4 @@
--- GUI erstellen
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-local Toggle = Instance.new("TextButton", ScreenGui)
-Toggle.Size = UDim2.new(0, 150, 0, 50)
-Toggle.Position = UDim2.new(0, 20, 0, 150)
-Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Toggle.TextColor3 = Color3.new(1, 1, 1)
-Toggle.Text = "Start AI"
-Toggle.TextScaled = true
-
-local aiRunning = false
+-- Erstelle das ScreenGui für den Start
 local player = game.Players.LocalPlayer
 local pathfindingService = game:GetService("PathfindingService")
 local targetPosition = nil
@@ -17,17 +7,19 @@ local targetPosition = nil
 game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        -- Berechne die Zielposition auf dem Bildschirm
         targetPosition = workspace.CurrentCamera:ScreenToWorldPoint(Vector3.new(input.Position.X, input.Position.Y, 0))
+
+        -- Sobald das Ziel gesetzt ist, starte das Pfadfinding
         if targetPosition then
-            -- Starte den Wegplanungsprozess
             startAI(targetPosition)
         end
     end
 end)
 
--- KI starten, um zum Ziel zu gehen
+-- KI startet und geht zum Ziel
 local function startAI(target)
-    aiRunning = true
+    -- Verwende Pathfinding, um den besten Weg zu finden
     local path = pathfindingService:CreatePath({
         AgentRadius = 2,
         AgentHeight = 5,
@@ -36,37 +28,21 @@ local function startAI(target)
         AgentMaxSlope = 45,
     })
 
-    -- Berechne den Pfad zum Ziel
+    -- Berechne den Pfad vom aktuellen Standort des Spielers zum Ziel
     path:ComputeAsync(player.Character.HumanoidRootPart.Position, target)
 
     -- Bewege den Charakter entlang des Pfades
     path:MoveTo(player.Character)
 
-    -- Wenn der Pfad abgeschlossen ist, stoppe die KI
+    -- Warte, bis der Pfad abgeschlossen ist
     path.Completed:Wait()
-    aiRunning = false
 end
 
--- Stoppen der KI
-local function stopAI()
-    aiRunning = false
-end
-
--- Button für das Starten/Stoppen der KI
-Toggle.MouseButton1Click:Connect(function()
-    if aiRunning then
-        stopAI()
-        Toggle.Text = "Start AI"
-    else
-        startAI(targetPosition)
-        Toggle.Text = "Stop AI"
-    end
-end)
-
--- Funktion um die KI kontinuierlich zu steuern
+-- Funktion wird alle 0,5 Sekunden wiederholt, um sicherzustellen, dass die KI immer noch auf dem Pfad bleibt
 while true do
-    if aiRunning and targetPosition then
-        startAI(targetPosition)  -- Sicherstellen, dass der AI-Pfad kontinuierlich verfolgt wird
+    if targetPosition then
+        -- Wenn ein Ziel festgelegt wurde, starte die KI und führe den Pfad aus
+        startAI(targetPosition)
     end
-    wait(0.5)  -- Verzögerung, um die CPU-Belastung zu minimieren
+    wait(0.5)  -- Verzögerung für die Berechnung
 end
