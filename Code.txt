@@ -147,5 +147,5 @@ end)
 -- Update ESP in der Nähe
 while true do
     espObjectsInRange()
-    wait(0.1)  -- ESP alle 0.5 Sekunden aktualisieren
+    wait(1)  -- ESP alle 0.5 Sekunden aktualisieren
 end
